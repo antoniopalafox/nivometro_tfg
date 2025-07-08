@@ -23,7 +23,7 @@ services:
     depends_on:
       - influxdb                                   # Espera a que InfluxDB esté listo antes de arrancar
     volumes:
-      - ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro  
+      - ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
                                                    # Monta la configuración de Telegraf en modo solo lectura
     env_file:
       - .env
