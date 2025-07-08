@@ -1,0 +1,10 @@
+CMake Error at /home/antonio/esp/esp-idf/tools/cmake/build.cmake:268 (message):
+  Failed to resolve component 'nivometro_sensors'.
+Call Stack (most recent call first):
+  /home/antonio/esp/esp-idf/tools/cmake/build.cmake:304 (__build_resolve_and_add_req)
+  /home/antonio/esp/esp-idf/tools/cmake/build.cmake:305 (__build_expand_requirements)
+  /home/antonio/esp/esp-idf/tools/cmake/build.cmake:599 (__build_expand_requirements)
+  /home/antonio/esp/esp-idf/tools/cmake/project.cmake:605 (idf_build_process)
+  CMakeLists.txt:8 (project)
+
+

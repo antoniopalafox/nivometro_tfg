@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2.0
+    container_name: nivometro-mqtt-broker
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    restart: unless-stopped
+    networks:
+      - nivometro-network
+
+  telegraf:
+    image: telegraf:1.28
+    container_name: nivometro-telegraf
+    volumes:
+      - ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+    depends_on:
+      - influxdb
+      - mosquitto
+    restart: unless-stopped
+    networks:
+      - nivometro-network
+    environment:
+      - INFLUX_TOKEN=nivometro-super-secret-token-antartica-2024
+
+  influxdb:
+    image: influxdb:2.7
+    container_name: nivometro-influxdb  
+    ports:
+      - "8086:8086"
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=antartica_admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=nivometro_antartica_2024!
+      - DOCKER_INFLUXDB_INIT_ORG=tfg_nivometro_antartica
+      - DOCKER_INFLUXDB_INIT_BUCKET=nivometro_sensor_data
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=nivometro-super-secret-token-antartica-2024
+    volumes:
+      - influxdb_data:/var/lib/influxdb2
+      - influxdb_config:/etc/influxdb2
+    restart: unless-stopped
+    networks:
+      - nivometro-network
+
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: nivometro-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=antartica
+      - GF_SECURITY_ADMIN_PASSWORD=nivometro2024
+      - GF_INSTALL_PLUGINS=grafana-worldmap-panel,grafana-clock-panel,grafana-piechart-panel
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    depends_on:
+      - influxdb
+    restart: unless-stopped
+    networks:
+      - nivometro-network
+
+volumes:
+  influxdb_data:
+  influxdb_config: 
+  grafana_data:
+
+networks:
+  nivometro-network:
+    driver: bridge
