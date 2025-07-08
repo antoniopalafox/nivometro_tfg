@@ -2,11 +2,11 @@
 .vscode/
 
 # ESP-IDF: configuración local y build
-tfg/sdkconfig
-tfg/sdkconfig.old
-tfg/sdkconfig.h
-tfg/build/
-tfg/CMakeCache.txt
-tfg/CMakeFiles/
-tfg/compile_commands.json
-tfg/project_description.json
+./sdkconfig
+./sdkconfig.old
+./sdkconfig.h
+./build/
+./CMakeCache.txt
+./CMakeFiles/
+./compile_commands.json
+./project_description.json
