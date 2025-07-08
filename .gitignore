@@ -1,0 +1,12 @@
+# IDEs y editores (ajusta según tus herramientas)
+.vscode/
+
+# ESP-IDF: configuración local y build
+tfg/sdkconfig
+tfg/sdkconfig.old
+tfg/sdkconfig.h
+tfg/build/
+tfg/CMakeCache.txt
+tfg/CMakeFiles/
+tfg/compile_commands.json
+tfg/project_description.json
