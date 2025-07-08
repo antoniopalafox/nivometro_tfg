@@ -1,16 +1,16 @@
 #include "communication.h"
+#include "sdkconfig.h"
 #include "esp_netif.h"
 #include "esp_wifi.h"
 #include "esp_event.h"
 #include "esp_log.h"
 #include "mqtt_client.h"
-#include "nivometro_sensors.h"
+#include "sensors.h"
 #include "esp_sntp.h"
 #include <sys/time.h>
 #include <time.h>
+#include <string.h>
 #include "freertos/event_groups.h"
-
-#include "communication_secrets.h"                     // Aquí están ssid, contraseña y uri del broker mqtt
 
 static const char* TAG = "communication";              // Etiqueta que usará esp_logx para clasificar mensajes de este módulo
 static esp_mqtt_client_handle_t mqtt_client = NULL;    // Puntero al cliente mqtt una vez inicializado
@@ -53,16 +53,16 @@ void communication_init(void) {
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &wifi_event_handler, NULL, &wifi_any_id_handle));
     ESP_ERROR_CHECK(esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &wifi_event_handler, NULL, &ip_got_ip_handle));
 
-    // 4) Preparar credenciales extraídas de communication_secrets.h
+    // 4) Preparar credenciales extraídas de sdkconfig
     wifi_config_t wifi_cfg = {
         .sta = {
             .threshold.authmode = WIFI_AUTH_WPA2_PSK
         }
     };
 
-    // Copiar ssid y password con límite de tamaño
-    strncpy((char*)wifi_cfg.sta.ssid, WIFI_SSID, sizeof(wifi_cfg.sta.ssid));
-    strncpy((char*)wifi_cfg.sta.password, WIFI_PASSWORD, sizeof(wifi_cfg.sta.password));
+    // Copiar ssid y password desde sdkconfig
+    strncpy((char*)wifi_cfg.sta.ssid, CONFIG_WIFI_SSID, sizeof(wifi_cfg.sta.ssid));
+    strncpy((char*)wifi_cfg.sta.password, CONFIG_WIFI_PASSWORD, sizeof(wifi_cfg.sta.password));
 
     // 5) Arrancar wifi en modo sta con esa configuración
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
@@ -75,9 +75,9 @@ void communication_init(void) {
     // 7) Una vez con wifi, sincronizar hora con sntp
     init_sntp_and_wait();
 
-    // 8) Configurar y arrancar cliente mqtt usando URI de communication_secrets.h
+    // 8) Configurar y arrancar cliente MQTT usando URI de sdkconfig
     esp_mqtt_client_config_t mqtt_cfg = {
-        .broker.address.uri = MQTT_URI
+        .broker.address.uri = CONFIG_MQTT_URI
     };
     mqtt_client = esp_mqtt_client_init(&mqtt_cfg);
     ESP_ERROR_CHECK(esp_mqtt_client_register_event(

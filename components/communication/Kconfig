@@ -1,0 +1,14 @@
+menu "Communication configuration"
+
+    config WIFI_SSID
+        string "Wi-Fi SSID"
+        default ""
+
+    config WIFI_PASSWORD
+        string "Wi-Fi Password"
+        default ""
+
+    config MQTT_URI
+        string "MQTT broker URI"
+        default ""
+endmenu
