@@ -1,0 +1,13 @@
+# Target labels
+ bootloader
+# Source files and their labels
+/mnt/c/Users/Antonio/Documents/GitHub/nivometro_tfg/build/CMakeFiles/bootloader
+/mnt/c/Users/Antonio/Documents/GitHub/nivometro_tfg/build/CMakeFiles/bootloader.rule
+/mnt/c/Users/Antonio/Documents/GitHub/nivometro_tfg/build/CMakeFiles/bootloader-complete.rule
+/mnt/c/Users/Antonio/Documents/GitHub/nivometro_tfg/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule
+/mnt/c/Users/Antonio/Documents/GitHub/nivometro_tfg/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule
+/mnt/c/Users/Antonio/Documents/GitHub/nivometro_tfg/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule
+/mnt/c/Users/Antonio/Documents/GitHub/nivometro_tfg/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule
+/mnt/c/Users/Antonio/Documents/GitHub/nivometro_tfg/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule
+/mnt/c/Users/Antonio/Documents/GitHub/nivometro_tfg/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule
+/mnt/c/Users/Antonio/Documents/GitHub/nivometro_tfg/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule
