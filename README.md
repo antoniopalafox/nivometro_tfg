@@ -1,4 +1,4 @@
-# tfg_nivometro# 🏔️ TFG Nivómetro Antártida - Proyecto Fusionado
+# 🏔️ TFG Nivómetro Antártida - Proyecto Fusionado
 
 Sistema completo de monitorización de nivel de nieve en la Antártida desarrollado como Trabajo Fin de Grado por Antonio Mata y Antonio Palafox.
 

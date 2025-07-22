@@ -13,6 +13,9 @@
 static const char* TAG = "tasks";                       // Etiqueta de logs para este módulo
 static QueueHandle_t data_queue;                        // Cola para pasar datos del sensor a la tarea de publicación
 
+// AGREGADO: Instancia global del nivómetro (debe ser inicializada desde main)
+extern nivometro_t g_nivometro;
+
 // Parámetros de la tarea de lectura de sensores
 #define SENSOR_TASK_STACK    2048
 #define SENSOR_TASK_PRI      (tskIDLE_PRIORITY + 2)
@@ -24,13 +27,25 @@ static QueueHandle_t data_queue;                        // Cola para pasar datos
 
 static void sensor_task(void* _) {
     sensor_data_t d;
+    nivometro_data_t nivometro_data;
+    
     for (;;) {
-        d = sensors_read_all();                         // Leer ultrasonido, peso y láser
-        if (xQueueSend(data_queue, &d, 0) != pdTRUE) {
-            ESP_LOGW(TAG, "sensor_task: queue full, dropping sample");
+        // CORREGIDO: Usar la API del nivómetro en lugar de sensors_read_all()
+        esp_err_t result = nivometro_read_all_sensors(&g_nivometro, &nivometro_data);
+        
+        if (result == ESP_OK) {
+            // Convertir nivometro_data_t a sensor_data_t
+            nivometro_data_to_sensor_data(&nivometro_data, &d);
+            
+            if (xQueueSend(data_queue, &d, 0) != pdTRUE) {
+                ESP_LOGW(TAG, "sensor_task: queue full, dropping sample");
+            }
+            ESP_LOGI(TAG, "Read: %.2f cm, %.2f kg, %.2f mm",
+                     d.distance_cm, d.weight_kg, d.laser_mm);
+        } else {
+            ESP_LOGE(TAG, "Error reading sensors: %s", esp_err_to_name(result));
         }
-        ESP_LOGI(TAG, "Read: %.2f cm, %.2f kg, %.2f mm",
-                 d.distance_cm, d.weight_kg, d.laser_mm);
+        
         vTaskDelay(pdMS_TO_TICKS(SENSOR_PERIOD_MS));    // Espera el siguiente ciclo
     }
 }
@@ -50,7 +65,6 @@ static void publish_task(void* _) {
         }
     }
 }
-
 
 void tasks_start_all(void) {
     // Crear la cola con capacidad para 10 muestras de sensor_data_t

@@ -1,7 +1,7 @@
 #pragma once    // Le indica al compilador que procese este fichero solo una vez por compilacion
 
 #include <esp_err.h>
-#include "sensnivometro_sensorsors.h"
+#include "nivometro_sensors.h"
 
 // Arranca la interfaz Wi-Fi y el cliente MQTT
 // Registra los manejadores de evento (connected, disconnected) para gestionar el estado de la conexión.

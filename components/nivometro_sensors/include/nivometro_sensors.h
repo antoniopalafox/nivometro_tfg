@@ -20,6 +20,17 @@ typedef struct {
     int8_t temperature_c;            // Temperatura estimada
 } nivometro_data_t;
 
+// AGREGADO: Estructura de datos para comunicación entre componentes
+typedef struct {
+    float distance_cm;        // Distancia HC-SR04P en centímetros
+    float weight_kg;          // Peso HX711 en kilogramos  
+    float laser_mm;           // Distancia VL53L0X en milímetros
+    int64_t timestamp_us;     // Timestamp en microsegundos
+    uint8_t sensor_status;    // Status de sensores (bits)
+    float battery_voltage;    // Voltaje batería
+    int temperature_c;        // Temperatura en Celsius
+} sensor_data_t;
+
 // Configuración del nivómetro
 typedef struct {
     // Pines HC-SR04P
@@ -61,3 +72,6 @@ void nivometro_power_up(nivometro_t *nivometro);
 // Funciones de utilidad
 const char* nivometro_get_sensor_status_string(uint8_t status);
 bool nivometro_is_sensor_working(uint8_t status, int sensor_index);
+
+// AGREGADO: Función de conversión entre estructuras
+void nivometro_data_to_sensor_data(const nivometro_data_t *src, sensor_data_t *dst);

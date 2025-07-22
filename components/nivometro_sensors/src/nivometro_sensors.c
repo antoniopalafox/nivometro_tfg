@@ -1,5 +1,6 @@
 #include "nivometro_sensors.h"
 #include "esp_timer.h"
+#include <string.h>
 
 static const char *TAG = "NIVOMETRO";
 
@@ -23,11 +24,14 @@ esp_err_t nivometro_init(nivometro_t *nivometro, const nivometro_config_t *confi
     hcsr04p_set_calibration(&nivometro->ultrasonic, config->hcsr04p_cal_factor);
     ESP_LOGI(TAG, "✅ HC-SR04P inicializado");
     
-    // Inicializar HX711
-    if (!hx711_init(&nivometro->scale,
-                    config->hx711_dout_pin,
-                    config->hx711_sck_pin,
-                    config->hx711_gain)) {
+    // Inicializar HX711 - CORREGIDO: usar estructura de configuración
+    hx711_config_t hx711_config = {
+        .dout_pin = config->hx711_dout_pin,
+        .sck_pin = config->hx711_sck_pin,
+        .gain = config->hx711_gain
+    };
+    
+    if (hx711_init(&nivometro->scale, &hx711_config) != ESP_OK) {
         ESP_LOGE(TAG, "Error inicializando HX711");
         return ESP_FAIL;
     }
@@ -65,10 +69,15 @@ esp_err_t nivometro_read_all_sensors(nivometro_t *nivometro, nivometro_data_t *d
         data->sensor_status |= 0x01; // Bit 0 = HC-SR04P OK
     }
     
-    // Leer HX711
-    data->weight_grams = hx711_read_units(&nivometro->scale);
-    if (data->weight_grams != 0 || data->weight_grams > -1000) { // Verificación básica
+    // Leer HX711 - CORREGIDO: usar puntero para recibir el valor
+    float weight_units;
+    esp_err_t hx711_result = hx711_read_units(&nivometro->scale, &weight_units);
+    if (hx711_result == ESP_OK) {
+        data->weight_grams = weight_units;
         data->sensor_status |= 0x02; // Bit 1 = HX711 OK
+    } else {
+        data->weight_grams = 0.0f;
+        ESP_LOGW(TAG, "Error leyendo HX711: %s", esp_err_to_name(hx711_result));
     }
     
     // Leer VL53L0X
@@ -94,10 +103,14 @@ esp_err_t nivometro_calibrate_scale(nivometro_t *nivometro, float known_weight_g
     }
     
     ESP_LOGI(TAG, "Calibrando balanza con peso conocido: %.2f g", known_weight_g);
-    hx711_calibrate(&nivometro->scale, known_weight_g, 10);
-    ESP_LOGI(TAG, "Calibración de balanza completada. Factor: %.2f", nivometro->scale.scale);
+    esp_err_t result = hx711_calibrate(&nivometro->scale, known_weight_g, 10);
+    if (result == ESP_OK) {
+        ESP_LOGI(TAG, "Calibración de balanza completada. Factor: %.2f", nivometro->scale.scale);
+    } else {
+        ESP_LOGE(TAG, "Error en calibración: %s", esp_err_to_name(result));
+    }
     
-    return ESP_OK;
+    return result;
 }
 
 esp_err_t nivometro_tare_scale(nivometro_t *nivometro) {
@@ -106,10 +119,14 @@ esp_err_t nivometro_tare_scale(nivometro_t *nivometro) {
     }
     
     ESP_LOGI(TAG, "Realizando tara de la balanza...");
-    hx711_tare(&nivometro->scale, 10);
-    ESP_LOGI(TAG, "Tara completada. Offset: %ld", nivometro->scale.offset);
+    esp_err_t result = hx711_tare(&nivometro->scale, 10);
+    if (result == ESP_OK) {
+        ESP_LOGI(TAG, "Tara completada. Offset: %ld", nivometro->scale.offset);
+    } else {
+        ESP_LOGE(TAG, "Error en tara: %s", esp_err_to_name(result));
+    }
     
-    return ESP_OK;
+    return result;
 }
 
 void nivometro_power_down(nivometro_t *nivometro) {
@@ -139,4 +156,16 @@ const char* nivometro_get_sensor_status_string(uint8_t status) {
 
 bool nivometro_is_sensor_working(uint8_t status, int sensor_index) {
     return (status & (1 << sensor_index)) != 0;
+}
+
+void nivometro_data_to_sensor_data(const nivometro_data_t *src, sensor_data_t *dst) {
+    if (!src || !dst) return;
+    
+    dst->distance_cm = src->ultrasonic_distance_cm;
+    dst->weight_kg = src->weight_grams / 1000.0f;  // Convertir gramos a kilogramos
+    dst->laser_mm = src->laser_distance_mm;
+    dst->timestamp_us = (int64_t)src->timestamp_us;
+    dst->sensor_status = src->sensor_status;
+    dst->battery_voltage = src->battery_voltage;
+    dst->temperature_c = (int)src->temperature_c;
 }

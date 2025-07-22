@@ -5,7 +5,7 @@
 #include "esp_event.h"
 #include "esp_log.h"
 #include "mqtt_client.h"
-#include "sensors.h"
+#include "nivometro_sensors.h"
 #include "esp_sntp.h"
 #include <sys/time.h>
 #include <time.h>
