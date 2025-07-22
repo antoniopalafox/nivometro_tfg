@@ -1,7 +1,7 @@
 {
     "version":            "1.1",
     "project_name":       "tfg",
-    "project_version":    "89d7eb1-dirty",
+    "project_version":    "8480abe-dirty",
     "project_path":       "/mnt/c/Users/Antonio/Documents/GitHub/nivometro_tfg",
     "idf_path":           "/home/antonio/esp/esp-idf",
     "build_dir":          "/mnt/c/Users/Antonio/Documents/GitHub/nivometro_tfg/build",
