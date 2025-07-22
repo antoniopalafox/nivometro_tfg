@@ -1669,9 +1669,9 @@ CONFIG_WIFI_PROV_STA_ALL_CHANNEL_SCAN=y
 #
 # Communication configuration
 #
-CONFIG_WIFI_SSID="S22 Ultra de Antonio"
-CONFIG_WIFI_PASSWORD="dlff9165"
-CONFIG_MQTT_URI="mqtt://broker.hivemq.com:1883"
+CONFIG_WIFI_SSID=""
+CONFIG_WIFI_PASSWORD=""
+CONFIG_MQTT_URI=""
 # end of Communication configuration
 # end of Component config
 
