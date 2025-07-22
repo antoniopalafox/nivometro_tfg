@@ -1,0 +1,107 @@
+ets Jul 29 2019 12:21:46
+
+rst:0x1 (POWERON_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:7128
+load:0x40078000,len:15688
+load:0x40080400,len:4
+load:0x40080404,len:3876
+entry 0x4008064c
+[0;32mI (29) boot: ESP-IDF v5.1.6-518-g7b3721436a 2nd stage bootloader[0m
+[0;32mI (29) boot: compile time Jul 22 2025 19:12:11[0m
+[0;32mI (31) boot: Multicore bootloader[0m
+[0;32mI (35) boot: chip revision: v3.1[0m
+[0;32mI (39) boot.esp32: SPI Speed      : 40MHz[0m
+[0;32mI (43) boot.esp32: SPI Mode       : DIO[0m
+[0;32mI (48) boot.esp32: SPI Flash Size : 4MB[0m
+[0;32mI (52) boot: Enabling RNG early entropy source...[0m
+[0;32mI (58) boot: Partition Table:[0m
+[0;32mI (61) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (69) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (76) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (84) boot:  2 factory          factory app      00 00 00010000 00100000[0m
+[0;32mI (91) boot: End of partition table[0m
+[0;32mI (95) esp_image: segment 0: paddr=00010020 vaddr=3f400020 size=20fc0h (135104) map[0m
+[0;32mI (153) esp_image: segment 1: paddr=00030fe8 vaddr=3ff80063 size=00008h (     8) load[0m
+[0;32mI (153) esp_image: segment 2: paddr=00030ff8 vaddr=3ffb0000 size=03d18h ( 15640) load[0m
+[0;32mI (165) esp_image: segment 3: paddr=00034d18 vaddr=40080000 size=0b300h ( 45824) load[0m
+[0;32mI (186) esp_image: segment 4: paddr=00040020 vaddr=400d0020 size=a33d0h (668624) map[0m
+[0;32mI (428) esp_image: segment 5: paddr=000e33f8 vaddr=4008b300 size=0d9d0h ( 55760) load[0m
+[0;32mI (451) esp_image: segment 6: paddr=000f0dd0 vaddr=400c0000 size=00064h (   100) load[0m
+[0;32mI (464) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (464) boot: Disabling RNG early entropy source...[0m
+[0;32mI (475) cpu_start: Multicore app[0m
+[0;32mI (476) cpu_start: Pro cpu up.[0m
+[0;32mI (477) cpu_start: Starting app cpu, entry point is 0x4008164c[0m
+[0;32mI (0) cpu_start: App cpu up.[0m
+[0;32mI (494) cpu_start: Pro cpu start user code[0m
+[0;32mI (494) cpu_start: cpu freq: 160000000 Hz[0m
+[0;32mI (494) cpu_start: Application information:[0m
+[0;32mI (498) cpu_start: Project name:     tfg[0m
+[0;32mI (503) cpu_start: App version:      6d7b0ca-dirty[0m
+[0;32mI (509) cpu_start: Compile time:     Jul 22 2025 19:12:01[0m
+[0;32mI (515) cpu_start: ELF file SHA256:  8248e9bd48bd8ed9...[0m
+[0;32mI (521) cpu_start: ESP-IDF:          v5.1.6-518-g7b3721436a[0m
+[0;32mI (527) cpu_start: Min chip rev:     v0.0[0m
+[0;32mI (532) cpu_start: Max chip rev:     v3.99 [0m
+[0;32mI (536) cpu_start: Chip rev:         v3.1[0m
+[0;32mI (541) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (549) heap_init: At 3FFAE6E0 len 00001920 (6 KiB): DRAM[0m
+[0;32mI (554) heap_init: At 3FFB82E0 len 00027D20 (159 KiB): DRAM[0m
+[0;32mI (561) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM[0m
+[0;32mI (567) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM[0m
+[0;32mI (573) heap_init: At 40098CD0 len 00007330 (28 KiB): IRAM[0m
+[0;32mI (581) spi_flash: detected chip: generic[0m
+[0;32mI (584) spi_flash: flash io: dio[0m
+[0;32mI (589) app_start: Starting scheduler on CPU0[0m
+[0;32mI (593) app_start: Starting scheduler on CPU1[0m
+[0;32mI (593) main_task: Started on CPU0[0m
+[0;32mI (603) main_task: Calling app_main()[0m
+[0;32mI (653) diagnostics: Diagnostics initialized[0m
+[0;32mI (663) NIVOMETRO_MAIN: 🏔️  Iniciando TFG Nivómetro Antártida[0m
+[0;32mI (663) NIVOMETRO_MAIN: 📊 Versión completa: LOGS + MQTT + API mejorada[0m
+[0;32mI (663) config: config_init() called, no CONFIG_* values available[0m
+[0;32mI (673) NIVOMETRO_MAIN: ✅ I2C inicializado[0m
+[0;32mI (683) NIVOMETRO: Inicializando sensores del nivómetro...[0m
+[0;32mI (683) gpio: GPIO[12]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (693) gpio: GPIO[13]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (703) NIVOMETRO: ✅ HC-SR04P inicializado[0m
+[0;32mI (713) gpio: GPIO[27]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (713) gpio: GPIO[26]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (923) HX711: Sensor despertado[0m
+[0;32mI (923) HX711: Ganancia configurada a: 1[0m
+[0;32mI (1123) HX711: HX711 inicializado correctamente[0m
+[0;32mI (1123) NIVOMETRO: ✅ HX711 inicializado[0m
+[0;31mE (1123) VL53L0X: Error reading device ID[0m
+[0;31mE (1123) NIVOMETRO: Error inicializando VL53L0X[0m
+[0;32mI (1123) NIVOMETRO: ✅ VL53L0X inicializado[0m
+[0;32mI (1133) NIVOMETRO: 🎉 Nivómetro completamente inicializado[0m
+[0;32mI (1143) NIVOMETRO_MAIN: ✅ Nivómetro inicializado correctamente[0m
+[0;32mI (1143) communication: Initializing communication module...[0m
+[0;32mI (1163) wifi:wifi driver task: 3ffc0704, prio:23, stack:6656, core=0[0m
+[0;32mI (1173) wifi:wifi firmware version: 8babc74886[0m
+[0;32mI (1173) wifi:wifi certification version: v7.0[0m
+[0;32mI (1173) wifi:config NVS flash: enabled[0m
+[0;32mI (1173) wifi:config nano formating: disabled[0m
+[0;32mI (1183) wifi:Init data frame dynamic rx buffer num: 32[0m
+[0;32mI (1183) wifi:Init static rx mgmt buffer num: 5[0m
+[0;32mI (1193) wifi:Init management short buffer num: 32[0m
+[0;32mI (1193) wifi:Init dynamic tx buffer num: 32[0m
+[0;32mI (1193) wifi:Init static rx buffer size: 1600[0m
+[0;32mI (1203) wifi:Init static rx buffer num: 10[0m
+[0;32mI (1203) wifi:Init dynamic rx buffer num: 32[0m
+[0;32mI (1213) wifi_init: rx ba win: 6[0m
+[0;32mI (1213) wifi_init: tcpip mbox: 32[0m
+[0;32mI (1213) wifi_init: udp mbox: 6[0m
+[0;32mI (1223) wifi_init: tcp mbox: 6[0m
+[0;32mI (1223) wifi_init: tcp tx win: 5760[0m
+[0;32mI (1233) wifi_init: tcp rx win: 5760[0m
+[0;32mI (1233) wifi_init: tcp mss: 1440[0m
+[0;32mI (1233) wifi_init: WiFi IRAM OP enabled[0m
+[0;32mI (1243) wifi_init: WiFi RX IRAM OP enabled[0m
+[0;32mI (1253) phy_init: phy_version 4860,6b7a6e5,Feb  6 2025,14:47:07[0m
+[0;32mI (1323) phy_init: Saving new calibration data due to checksum failure or outdated calibration data, mode(0)[0m
+[0;32mI (1413) wifi:mode : sta (48:e7:29:3f:bc:54)[0m
+[0;32mI (1413) wifi:enable tsf[0m

@@ -19,7 +19,7 @@ esp_err_t nivometro_init(nivometro_t *nivometro, const nivometro_config_t *confi
                       config->hcsr04p_trigger_pin, 
                       config->hcsr04p_echo_pin)) {
         ESP_LOGE(TAG, "Error inicializando HC-SR04P");
-        return ESP_FAIL;
+        //return ESP_FAIL;
     }
     hcsr04p_set_calibration(&nivometro->ultrasonic, config->hcsr04p_cal_factor);
     ESP_LOGI(TAG, "✅ HC-SR04P inicializado");
@@ -33,7 +33,7 @@ esp_err_t nivometro_init(nivometro_t *nivometro, const nivometro_config_t *confi
     
     if (hx711_init(&nivometro->scale, &hx711_config) != ESP_OK) {
         ESP_LOGE(TAG, "Error inicializando HX711");
-        return ESP_FAIL;
+        //return ESP_FAIL;
     }
     ESP_LOGI(TAG, "✅ HX711 inicializado");
     
@@ -42,7 +42,7 @@ esp_err_t nivometro_init(nivometro_t *nivometro, const nivometro_config_t *confi
                       config->vl53l0x_i2c_port,
                       config->vl53l0x_address)) {
         ESP_LOGE(TAG, "Error inicializando VL53L0X");
-        return ESP_FAIL;
+        //return ESP_FAIL;
     }
     vl53l0x_set_accuracy(&nivometro->laser, config->vl53l0x_accuracy);
     vl53l0x_set_calibration(&nivometro->laser, config->vl53l0x_cal_factor);

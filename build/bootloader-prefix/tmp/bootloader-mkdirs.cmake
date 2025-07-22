@@ -3,20 +3,25 @@
 
 cmake_minimum_required(VERSION 3.5)
 
+# If CMAKE_DISABLE_SOURCE_CHANGES is set to true and the source directory is an
+# existing directory in our source tree, calling file(MAKE_DIRECTORY) on it
+# would cause a fatal error, even though it would be a no-op.
+if(NOT EXISTS "/home/antonio/esp/esp-idf/components/bootloader/subproject")
+  file(MAKE_DIRECTORY "/home/antonio/esp/esp-idf/components/bootloader/subproject")
+endif()
 file(MAKE_DIRECTORY
-  "/home/antonio/esp/esp-idf/components/bootloader/subproject"
-  "/mnt/c/Users/Antonio/Documents/GitHub/nivometro_tfg/build/bootloader"
-  "/mnt/c/Users/Antonio/Documents/GitHub/nivometro_tfg/build/bootloader-prefix"
-  "/mnt/c/Users/Antonio/Documents/GitHub/nivometro_tfg/build/bootloader-prefix/tmp"
-  "/mnt/c/Users/Antonio/Documents/GitHub/nivometro_tfg/build/bootloader-prefix/src/bootloader-stamp"
-  "/mnt/c/Users/Antonio/Documents/GitHub/nivometro_tfg/build/bootloader-prefix/src"
-  "/mnt/c/Users/Antonio/Documents/GitHub/nivometro_tfg/build/bootloader-prefix/src/bootloader-stamp"
+  "/home/antonio/nivometro_tfg/build/bootloader"
+  "/home/antonio/nivometro_tfg/build/bootloader-prefix"
+  "/home/antonio/nivometro_tfg/build/bootloader-prefix/tmp"
+  "/home/antonio/nivometro_tfg/build/bootloader-prefix/src/bootloader-stamp"
+  "/home/antonio/nivometro_tfg/build/bootloader-prefix/src"
+  "/home/antonio/nivometro_tfg/build/bootloader-prefix/src/bootloader-stamp"
 )
 
 set(configSubDirs )
 foreach(subDir IN LISTS configSubDirs)
-    file(MAKE_DIRECTORY "/mnt/c/Users/Antonio/Documents/GitHub/nivometro_tfg/build/bootloader-prefix/src/bootloader-stamp/${subDir}")
+    file(MAKE_DIRECTORY "/home/antonio/nivometro_tfg/build/bootloader-prefix/src/bootloader-stamp/${subDir}")
 endforeach()
 if(cfgdir)
-  file(MAKE_DIRECTORY "/mnt/c/Users/Antonio/Documents/GitHub/nivometro_tfg/build/bootloader-prefix/src/bootloader-stamp${cfgdir}") # cfgdir has leading slash
+  file(MAKE_DIRECTORY "/home/antonio/nivometro_tfg/build/bootloader-prefix/src/bootloader-stamp${cfgdir}") # cfgdir has leading slash
 endif()

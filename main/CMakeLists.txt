@@ -11,10 +11,6 @@ idf_component_register(
         storage
         tasks
         utils
-        # Drivers específicos nivómetro (antoniopalafox)
-        hcsr04p
-        hx711
-        vl53l0x
         # Componente integración
         nivometro_sensors
         # Dependencias del sistema
