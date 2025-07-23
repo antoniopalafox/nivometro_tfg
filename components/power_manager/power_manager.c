@@ -1,163 +1,137 @@
-<<<<<<< HEAD
-/*
-=======
-// components/power_manager/src/power_manager.c
->>>>>>> 309a69d84d31e1a8cbc061ce05c03b7c118ea376
 #include "power_manager.h"
 #include "esp_sleep.h"
 #include "esp_log.h"
-#include "driver/gpio.h"
-
-static const char* TAG = "power_manager";  // Etiqueta de logs para este módulo
-
-// GPIO donde conectas el divisor de tensión desde VIN (5V USB)
-#define PIN_POWER_DETECT   GPIO_NUM_17
-
-void power_manager_init(void) {
-    // Al arrancar, comprueba si viene de deep_sleep y lo registra
-    esp_sleep_wakeup_cause_t cause = esp_sleep_get_wakeup_cause();
-    if (cause == ESP_SLEEP_WAKEUP_TIMER) {
-        ESP_LOGI(TAG, "Woke up from deep sleep (timer)");
-    } else if (cause == ESP_SLEEP_WAKEUP_UNDEFINED) {
-        ESP_LOGI(TAG, "Power on or reset");
-    }
-
-    // Configuración GPIO para detección de fuente de alimentación
-    gpio_config_t cfg = {
-        .pin_bit_mask   = 1ULL << PIN_POWER_DETECT,
-        .mode           = GPIO_MODE_INPUT,
-        .pull_up_en     = GPIO_PULLUP_DISABLE,
-        .pull_down_en   = GPIO_PULLDOWN_ENABLE,
-        .intr_type      = GPIO_INTR_DISABLE
-    };
-    ESP_ERROR_CHECK(gpio_config(&cfg));
-}
-
-bool power_manager_should_sleep(void) {
-    // Controla un contador de ciclos y devuelve true tras el primer ciclo
-    static int cycle_count = 0;
-    cycle_count++;
-    if (cycle_count >= 1) {
-        ESP_LOGI(TAG, "power_manager: should_sleep == true");
-        return true;
-    }
-    return false;
-}
-
-void power_manager_enter_deep_sleep(void) {
-    // Programa un wakeup por temporizador y arranca deep sleep
-    const uint64_t WAKEUP_TIME_SEC = 30ULL; // 30 segundos
-    ESP_LOGI(TAG, "Entering deep sleep for %llu seconds...", WAKEUP_TIME_SEC);
-    esp_sleep_enable_timer_wakeup(WAKEUP_TIME_SEC * 1000000ULL);
-    esp_deep_sleep_start();
-<<<<<<< HEAD
-}*/
-#include "power_manager.h"
-#include "esp_sleep.h"
-#include "esp_log.h"
-#include "driver/gpio.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-static const char* TAG = "power_manager";               // Etiqueta de logs para este modulo
+static const char* TAG = "power_manager";
 
-// Configuración de hardware - AJUSTA ESTE PIN SEGÚN TU CIRCUITO
-#define POWER_DETECT_PIN    GPIO_NUM_34  // Pin para detectar USB vs Batería
-#define DEBOUNCE_TIME_MS    50           // Tiempo anti-rebote en ms
+// ===== VARIABLES DE SIMULACIÓN =====
+static bool simulation_enabled = true;
+static power_source_t simulated_source = POWER_SOURCE_USB;  // Empezar en USB
+static uint32_t last_switch_time = 0;
+static uint32_t switch_interval_ms = 15000; // 15 segundos entre cambios (más rápido para pruebas)
+static uint32_t switch_count = 0;
 
-// Variables estáticas
-static power_source_t current_power_source = POWER_SOURCE_UNKNOWN;
-static bool gpio_initialized = false;
-
-/**
- * Inicializar GPIO para detección de alimentación
- */
-static void init_power_detection_gpio(void) {
-    if (gpio_initialized) {
-        return;
-    }
-    
-    gpio_config_t power_detect_config = {
-        .pin_bit_mask = (1ULL << POWER_DETECT_PIN),
-        .mode = GPIO_MODE_INPUT,
-        .pull_up_en = GPIO_PULLUP_DISABLE,
-        .pull_down_en = GPIO_PULLDOWN_DISABLE,
-        .intr_type = GPIO_INTR_DISABLE
-    };
-    
-    esp_err_t ret = gpio_config(&power_detect_config);
-    if (ret == ESP_OK) {
-        gpio_initialized = true;
-        ESP_LOGI(TAG, "GPIO %d configurado para detección de alimentación", POWER_DETECT_PIN);
-    } else {
-        ESP_LOGE(TAG, "Error configurando GPIO %d: %s", POWER_DETECT_PIN, esp_err_to_name(ret));
-    }
-}
-
-/**
- * Detectar fuente de alimentación actual
- */
-static power_source_t detect_power_source(void) {
-    if (!gpio_initialized) {
-        init_power_detection_gpio();
-    }
-    
-    // Hacer lecturas con anti-rebote
-    int reading1 = gpio_get_level(POWER_DETECT_PIN);
-    vTaskDelay(pdMS_TO_TICKS(DEBOUNCE_TIME_MS));
-    int reading2 = gpio_get_level(POWER_DETECT_PIN);
-    
-    if (reading1 == reading2) {
-        // AJUSTA ESTA LÓGICA SEGÚN TU CIRCUITO:
-        // HIGH (1) = USB/Corriente externa conectada
-        // LOW (0) = Solo batería
-        return (reading1 == 1) ? POWER_SOURCE_USB : POWER_SOURCE_BATTERY;
-    }
-    
-    // Si las lecturas son inconsistentes, mantener estado anterior
-    return current_power_source;
+// Función para obtener tiempo en milisegundos
+static uint32_t get_time_ms(void) {
+    return xTaskGetTickCount() * portTICK_PERIOD_MS;
 }
 
 void power_manager_init(void) {
-    // Inicializar GPIO para detección
-    init_power_detection_gpio();
+    ESP_LOGI(TAG, "==========================================");
+    ESP_LOGI(TAG, "🎮 MODO SIMULACIÓN ACTIVADO");
+    ESP_LOGI(TAG, "🔄 Alternará automáticamente:");
+    ESP_LOGI(TAG, "   USB (15s) → BATERÍA (15s) → USB...");
+    ESP_LOGI(TAG, "⏱️  Observa el comportamiento diferente:");
+    ESP_LOGI(TAG, "   🔌 USB: Mediciones cada 5s, SIN sleep");
+    ESP_LOGI(TAG, "   🔋 BATERÍA: Mediciones cada 60s, CON sleep");
+    ESP_LOGI(TAG, "==========================================");
     
-    // Detectar fuente de alimentación inicial
-    current_power_source = detect_power_source();
+    // Inicializar temporizador
+    last_switch_time = get_time_ms();
     
-    // Al arrancar, comprueba si viene de deep_sleep y lo registra
+    // FORZAR MODO USB AL INICIO PARA PRUEBAS
+    simulated_source = POWER_SOURCE_USB;
+    ESP_LOGI(TAG, "🔌 FORZANDO inicio en modo USB para pruebas inmediatas");
+    
+    // Verificar causa del despertar
     esp_sleep_wakeup_cause_t cause = esp_sleep_get_wakeup_cause();
-    if (cause == ESP_SLEEP_WAKEUP_TIMER) {
-        ESP_LOGI(TAG, "Woke up from deep sleep (timer) - Fuente: %s", 
-                (current_power_source == POWER_SOURCE_USB) ? "USB" : "BATERÍA");
-    } else if (cause == ESP_SLEEP_WAKEUP_UNDEFINED) {
-        ESP_LOGI(TAG, "Power on or reset - Fuente: %s", 
-                (current_power_source == POWER_SOURCE_USB) ? "USB" : "BATERÍA");
+    switch (cause) {
+        case ESP_SLEEP_WAKEUP_TIMER:
+            ESP_LOGI(TAG, "🔋 Despertar desde deep sleep (simulando modo batería)");
+            simulated_source = POWER_SOURCE_BATTERY; // Mantener modo batería tras despertar
+            break;
+        case ESP_SLEEP_WAKEUP_UNDEFINED:
+        default:
+            ESP_LOGI(TAG, "🔌 Inicio normal del sistema (simulando modo USB)");
+            simulated_source = POWER_SOURCE_USB;
+            break;
     }
 }
 
-bool power_manager_should_sleep(void) {
-    // Actualizar detección de fuente de alimentación
-    power_source_t new_source = detect_power_source();
+static power_source_t simulate_power_source(void) {
+    uint32_t current_time = get_time_ms();
+    uint32_t time_since_last = current_time - last_switch_time;
     
-    // Informar cambios de alimentación
-    if (new_source != current_power_source && new_source != POWER_SOURCE_UNKNOWN) {
-        ESP_LOGI(TAG, "Cambio de alimentación: %s → %s",
-                (current_power_source == POWER_SOURCE_USB) ? "USB" : "BATERÍA",
-                (new_source == POWER_SOURCE_USB) ? "USB" : "BATERÍA");
-        current_power_source = new_source;
+    // DEBUG: Log periódico del tiempo
+    static uint32_t last_debug_log = 0;
+    if (current_time - last_debug_log > 5000) { // Cada 5 segundos
+        ESP_LOGI(TAG, "🔍 DEBUG: Tiempo transcurrido: %lu ms / %lu ms", 
+                time_since_last, switch_interval_ms);
+        last_debug_log = current_time;
     }
     
-    if (current_power_source == POWER_SOURCE_USB) {
-        // CONECTADO A USB: No entrar en sleep - permanecer activo
-        ESP_LOGD(TAG, "USB conectado - mantener modo activo");
+    // Cambiar modo cada intervalo definido
+    if (time_since_last > switch_interval_ms) {
+        // Alternar entre USB y BATERÍA
+        power_source_t old_source = simulated_source;
+        simulated_source = (simulated_source == POWER_SOURCE_USB) ? 
+                          POWER_SOURCE_BATTERY : POWER_SOURCE_USB;
+        
+        switch_count++;
+        last_switch_time = current_time;
+        
+        // Log del cambio con detalles
+        const char* old_str = (old_source == POWER_SOURCE_USB) ? "USB" : "BATERÍA";
+        const char* new_str = (simulated_source == POWER_SOURCE_USB) ? "USB" : "BATERÍA";
+        
+        ESP_LOGI(TAG, "🔄 CAMBIO DE SIMULACIÓN #%lu", switch_count);
+        ESP_LOGI(TAG, "   %s → %s", old_str, new_str);
+        ESP_LOGI(TAG, "   Tiempo transcurrido: %lu ms", time_since_last);
+        
+        if (simulated_source == POWER_SOURCE_USB) {
+            ESP_LOGI(TAG, "🔌 AHORA: Modo USB activo");
+            ESP_LOGI(TAG, "   → Mediciones frecuentes (5s)");
+            ESP_LOGI(TAG, "   → WiFi/MQTT siempre activos");
+            ESP_LOGI(TAG, "   → SIN deep sleep");
+        } else {
+            ESP_LOGI(TAG, "🔋 AHORA: Modo BATERÍA activo");
+            ESP_LOGI(TAG, "   → Mediciones espaciadas (60s)");
+            ESP_LOGI(TAG, "   → Deep sleep automático");
+            ESP_LOGI(TAG, "   → Máximo ahorro de energía");
+        }
+        
+        ESP_LOGI(TAG, "⏰ Próximo cambio en 15 segundos...");
+    }
+    
+    return simulated_source;
+}
+
+power_source_t power_manager_get_source(void) {
+    if (simulation_enabled) {
+        power_source_t current = simulate_power_source();
+        
+        // Log periódico del estado actual (cada 10 segundos)
+        static uint32_t last_status_log = 0;
+        uint32_t now = get_time_ms();
+        if (now - last_status_log > 10000) { // 10 segundos
+            const char* mode_str = (current == POWER_SOURCE_USB) ? "USB" : "BATERÍA";
+            uint32_t time_to_switch = (switch_interval_ms - (now - last_switch_time)) / 1000;
+            ESP_LOGI(TAG, "📊 Estado: %s | Cambio en: %lu segundos", mode_str, time_to_switch);
+            last_status_log = now;
+        }
+        
+        return current;
+    }
+    
+    // Lógica real cuando tengas el hardware
+    return POWER_SOURCE_BATTERY;
+}
+
+bool power_manager_should_sleep(void) {
+    power_source_t source = power_manager_get_source();
+    
+    if (source == POWER_SOURCE_USB) {
+        ESP_LOGD(TAG, "🔌 USB detectado - mantener modo activo");
         return false;
     } else {
-        // SOLO BATERÍA: Entrar en sleep después del primer ciclo
+        // BATERÍA: Usar la lógica original de tu código
         static int cycle_count = 0;
         cycle_count++;
+        
         if (cycle_count >= 1) {
-            ESP_LOGI(TAG, "Solo batería detectada - power_manager: should_sleep == true");
+            ESP_LOGI(TAG, "🔋 Solo batería detectada - power_manager: should_sleep == true");
             return true;
         }
         return false;
@@ -165,46 +139,56 @@ bool power_manager_should_sleep(void) {
 }
 
 void power_manager_enter_deep_sleep(void) {
-    // Verificar una vez más la fuente antes de entrar en sleep
-    power_source_t source = detect_power_source();
+    power_source_t source = power_manager_get_source();
     
     if (source == POWER_SOURCE_USB) {
-        ESP_LOGW(TAG, "USB conectado - cancelando deep sleep");
+        ESP_LOGW(TAG, "⚠️  USB conectado - cancelando deep sleep");
         return;
     }
     
-    // Programa un wakeup por temporizador y arranca deep sleep
-    const uint64_t WAKEUP_TIME_SEC = 30ULL; // 30 segundos
-    ESP_LOGI(TAG, "Entering deep sleep for %llu seconds...", WAKEUP_TIME_SEC);
-    esp_sleep_enable_timer_wakeup(WAKEUP_TIME_SEC * 1000000ULL);
+    ESP_LOGI(TAG, "💤 SIMULACIÓN: Entrando en deep sleep...");
+    ESP_LOGI(TAG, "⏰ Sleep por 15 segundos (en modo real serían 30s)");
+    ESP_LOGI(TAG, "🔄 Al despertar continuará la simulación...");
+    
+    // Sleep más corto para pruebas más ágiles
+    const uint64_t SIMULATION_SLEEP_TIME = 15000000ULL; // 15 segundos
+    esp_sleep_enable_timer_wakeup(SIMULATION_SLEEP_TIME);
     esp_deep_sleep_start();
-}
-
-// NUEVAS FUNCIONES AÑADIDAS:
-
-power_source_t power_manager_get_source(void) {
-    // Actualizar y devolver fuente actual
-    power_source_t new_source = detect_power_source();
-    if (new_source != POWER_SOURCE_UNKNOWN) {
-        current_power_source = new_source;
-    }
-    return current_power_source;
 }
 
 bool power_manager_is_usb_connected(void) {
     return (power_manager_get_source() == POWER_SOURCE_USB);
 }
-=======
+
+// ===== FUNCIONES ADICIONALES PARA DEBUGGING =====
+
+void power_manager_log_status(void) {
+    power_source_t source = power_manager_get_source();
+    const char* mode_str = (source == POWER_SOURCE_USB) ? "USB/Corriente" : "Batería";
+    const char* behavior_str = (source == POWER_SOURCE_USB) ? "ACTIVO CONTINUO" : "AHORRO ENERGÍA";
+    
+    ESP_LOGI(TAG, "📊 ESTADO SIMULACIÓN:");
+    ESP_LOGI(TAG, "   Fuente: %s", mode_str);
+    ESP_LOGI(TAG, "   Modo: %s", behavior_str);
+    ESP_LOGI(TAG, "   Cambios realizados: %lu", switch_count);
+    ESP_LOGI(TAG, "   Simulación: %s", simulation_enabled ? "ACTIVA" : "MANUAL");
 }
 
-power_source_t power_manager_get_source(void) {
-    // Lee el nivel del pin para detectar fuente: 1=USB, 0=batería
-    int level = gpio_get_level(PIN_POWER_DETECT);
-    power_source_t src = (level == 1)
-        ? POWER_SOURCE_USB
-        : POWER_SOURCE_BATTERY;
-    ESP_LOGI(TAG, "Detected power source: %s",
-             src == POWER_SOURCE_USB ? "USB (normal)" : "Battery (low power)");
-    return src;
+// Funciones para control manual (para futuras pruebas)
+void power_manager_force_usb_simulation(void) {
+    simulation_enabled = false;
+    simulated_source = POWER_SOURCE_USB;
+    ESP_LOGI(TAG, "🔌 MANUAL: Forzando modo USB");
 }
->>>>>>> 309a69d84d31e1a8cbc061ce05c03b7c118ea376
+
+void power_manager_force_battery_simulation(void) {
+    simulation_enabled = false;
+    simulated_source = POWER_SOURCE_BATTERY;
+    ESP_LOGI(TAG, "🔋 MANUAL: Forzando modo BATERÍA");
+}
+
+void power_manager_resume_auto_simulation(void) {
+    simulation_enabled = true;
+    last_switch_time = get_time_ms();
+    ESP_LOGI(TAG, "🔄 Simulación automática reactivada");
+}
