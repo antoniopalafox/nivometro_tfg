@@ -36,23 +36,23 @@ Los datos se envían vía MQTT a un stack de monitorización compuesto por Teleg
 
 ### Instalación Rápida
 
-# Configurar credenciales WiFi/MQTT
+#### Configurar credenciales WiFi/MQTT
 idf.py menuconfig
 
 Serial flasher config -> Flash Size (4 MB)
 
 Component config -> Communication configuration. Rellena SSID, Pasword y MQTT URI
 
-# Compilar
+#### Compilar
 idf.py build 
 
-# Levantar stack de monitorización  
+#### Levantar stack de monitorización  
 cd tfg_telegraf_influx_grafana && docker-compose up -d
 
-# Flashear ESP32
+#### Flashear ESP32
 cd .. && idf.py flash monitor
 
-
+===============================================================================
 
 
 
