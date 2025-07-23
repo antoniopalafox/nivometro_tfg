@@ -1,0 +1,143 @@
+PI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:7128
+load:0x40078000,len:15688
+load:0x40080400,len:4
+load:0x40080404,len:3876
+entry 0x4008064c
+[0;32mI (29) boot: ESP-IDF v5.1.6-518-g7b3721436a 2nd stage bootloader[0m
+[0;32mI (29) boot: compile time Jul 22 2025 23:40:48[0m
+[0;32mI (31) boot: Multicore bootloader[0m
+[0;32mI (35) boot: chip revision: v3.1[0m
+[0;32mI (39) boot.esp32: SPI Speed      : 40MHz[0m
+[0;32mI (43) boot.esp32: SPI Mode       : DIO[0m
+[0;32mI (48) boot.esp32: SPI Flash Size : 4MB[0m
+[0;32mI (52) boot: Enabling RNG early entropy source...[0m
+[0;32mI (58) boot: Partition Table:[0m
+[0;32mI (61) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (69) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (76) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (84) boot:  2 factory          factory app      00 00 00010000 00100000[0m
+[0;32mI (91) boot: End of partition table[0m
+[0;32mI (95) esp_image: segment 0: paddr=00010020 vaddr=3f400020 size=21118h (135448) map[0m
+[0;32mI (153) esp_image: segment 1: paddr=00031140 vaddr=3ff80063 size=00008h (     8) load[0m
+[0;32mI (153) esp_image: segment 2: paddr=00031150 vaddr=3ffb0000 size=03d18h ( 15640) load[0m
+[0;32mI (165) esp_image: segment 3: paddr=00034e70 vaddr=40080000 size=0b1a8h ( 45480) load[0m
+[0;32mI (186) esp_image: segment 4: paddr=00040020 vaddr=400d0020 size=a34c8h (668872) map[0m
+[0;32mI (428) esp_image: segment 5: paddr=000e34f0 vaddr=4008b1a8 size=0db28h ( 56104) load[0m
+[0;32mI (451) esp_image: segment 6: paddr=000f1020 vaddr=400c0000 size=00064h (   100) load[0m
+[0;32mI (464) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (464) boot: Disabling RNG early entropy source...[0m
+[0;32mI (476) cpu_start: Multicore app[0m
+[0;32mI (477) cpu_start: Pro cpu up.[0m
+[0;32mI (477) cpu_start: Starting app cpu, entry point is 0x4008164c[0m
+[0;32mI (0) cpu_start: App cpu up.[0m
+[0;32mI (494) cpu_start: Pro cpu start user code[0m
+[0;32mI (494) cpu_start: cpu freq: 160000000 Hz[0m
+[0;32mI (494) cpu_start: Application information:[0m
+[0;32mI (499) cpu_start: Project name:     tfg[0m
+[0;32mI (503) cpu_start: App version:      9d1e56d-dirty[0m
+[0;32mI (509) cpu_start: Compile time:     Jul 22 2025 23:40:39[0m
+[0;32mI (515) cpu_start: ELF file SHA256:  534d5e4684745dfb...[0m
+[0;32mI (521) cpu_start: ESP-IDF:          v5.1.6-518-g7b3721436a[0m
+[0;32mI (527) cpu_start: Min chip rev:     v0.0[0m
+[0;32mI (532) cpu_start: Max chip rev:     v3.99 [0m
+[0;32mI (537) cpu_start: Chip rev:         v3.1[0m
+[0;32mI (542) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (549) heap_init: At 3FFAE6E0 len 00001920 (6 KiB): DRAM[0m
+[0;32mI (555) heap_init: At 3FFB82E0 len 00027D20 (159 KiB): DRAM[0m
+[0;32mI (561) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM[0m
+[0;32mI (567) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM[0m
+[0;32mI (574) heap_init: At 40098CD0 len 00007330 (28 KiB): IRAM[0m
+[0;32mI (581) spi_flash: detected chip: generic[0m
+[0;32mI (584) spi_flash: flash io: dio[0m
+[0;32mI (589) app_start: Starting scheduler on CPU0[0m
+[0;32mI (594) app_start: Starting scheduler on CPU1[0m
+[0;32mI (594) main_task: Started on CPU0[0m
+[0;32mI (604) main_task: Calling app_main()[0m
+[0;32mI (654) diagnostics: Diagnostics initialized[0m
+[0;32mI (654) NIVOMETRO_MAIN: 🏔️  Iniciando TFG Nivómetro Antártida[0m
+[0;32mI (654) NIVOMETRO_MAIN: 📊 Versión completa: LOGS + MQTT + API mejorada[0m
+[0;32mI (664) config: config_init() called, no CONFIG_* values available[0m
+[0;32mI (674) NIVOMETRO_MAIN: ✅ I2C inicializado[0m
+[0;32mI (674) NIVOMETRO: Inicializando sensores del nivómetro...[0m
+[0;32mI (684) gpio: GPIO[12]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (694) gpio: GPIO[13]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (704) NIVOMETRO: ✅ HC-SR04P inicializado[0m
+[0;32mI (704) gpio: GPIO[27]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (714) gpio: GPIO[26]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (924) HX711: Sensor despertado[0m
+[0;32mI (924) HX711: Ganancia configurada a: 1[0m
+[0;32mI (1124) HX711: HX711 inicializado correctamente[0m
+[0;32mI (1124) NIVOMETRO: ✅ HX711 inicializado[0m
+[0;31mE (1124) VL53L0X: Error reading device ID[0m
+[0;31mE (1124) NIVOMETRO: Error inicializando VL53L0X[0m
+[0;32mI (1124) NIVOMETRO: ✅ VL53L0X inicializado[0m
+[0;32mI (1134) NIVOMETRO: 🎉 Nivómetro completamente inicializado[0m
+[0;32mI (1144) NIVOMETRO_MAIN: ✅ Nivómetro inicializado correctamente[0m
+[0;32mI (1144) communication: Initializing communication module...[0m
+[0;32mI (1164) wifi:wifi driver task: 3ffc0704, prio:23, stack:6656, core=0[0m
+[0;32mI (1174) wifi:wifi firmware version: 8babc74886[0m
+[0;32mI (1174) wifi:wifi certification version: v7.0[0m
+[0;32mI (1174) wifi:config NVS flash: enabled[0m
+[0;32mI (1174) wifi:config nano formating: disabled[0m
+[0;32mI (1184) wifi:Init data frame dynamic rx buffer num: 32[0m
+[0;32mI (1184) wifi:Init static rx mgmt buffer num: 5[0m
+[0;32mI (1194) wifi:Init management short buffer num: 32[0m
+[0;32mI (1194) wifi:Init dynamic tx buffer num: 32[0m
+[0;32mI (1194) wifi:Init static rx buffer size: 1600[0m
+[0;32mI (1204) wifi:Init static rx buffer num: 10[0m
+[0;32mI (1204) wifi:Init dynamic rx buffer num: 32[0m
+[0;32mI (1214) wifi_init: rx ba win: 6[0m
+[0;32mI (1214) wifi_init: tcpip mbox: 32[0m
+[0;32mI (1214) wifi_init: udp mbox: 6[0m
+[0;32mI (1224) wifi_init: tcp mbox: 6[0m
+[0;32mI (1224) wifi_init: tcp tx win: 5760[0m
+[0;32mI (1234) wifi_init: tcp rx win: 5760[0m
+[0;32mI (1234) wifi_init: tcp mss: 1440[0m
+[0;32mI (1234) wifi_init: WiFi IRAM OP enabled[0m
+[0;32mI (1244) wifi_init: WiFi RX IRAM OP enabled[0m
+[0;32mI (1244) phy_init: phy_version 4860,6b7a6e5,Feb  6 2025,14:47:07[0m
+[0;32mI (1324) wifi:mode : sta (48:e7:29:3f:bc:54)[0m
+[0;32mI (1324) wifi:enable tsf[0m
+[0;32mI (1344) wifi:new:<1,0>, old:<1,0>, ap:<255,255>, sta:<1,0>, prof:1[0m
+[0;32mI (1344) wifi:state: init -> auth (b0)[0m
+[0;32mI (1354) wifi:state: auth -> assoc (0)[0m
+[0;32mI (1364) wifi:state: assoc -> run (10)[0m
+[0;32mI (1514) wifi:connected with S22 Ultra de Antonio, aid = 1, channel 1, BW20, bssid = b6:e6:b9:98:52:57[0m
+[0;32mI (1514) wifi:security: WPA2-PSK, phy: bgn, rssi: -36[0m
+[0;32mI (1524) wifi:pm start, type: 1[0m
+
+[0;32mI (1524) wifi:dp: 1, bi: 102400, li: 3, scale listen interval from 307200 us to 307200 us[0m
+[0;32mI (1574) wifi:<ba-add>idx:0 (ifx:0, b6:e6:b9:98:52:57), tid:0, ssn:0, winSize:64[0m
+[0;32mI (1814) wifi:dp: 2, bi: 102400, li: 4, scale listen interval from 307200 us to 409600 us[0m
+[0;32mI (1814) wifi:AP's beacon interval = 102400 us, DTIM period = 2[0m
+[0;32mI (2534) esp_netif_handlers: sta ip: 10.229.56.167, mask: 255.255.255.0, gw: 10.229.56.251[0m
+[0;32mI (7534) power_manager: Power on or reset[0m
+[0;32mI (7534) gpio: GPIO[17]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 0| Pulldown: 1| Intr:0 [0m
+[0;32mI (7534) NIVOMETRO_MAIN: 🔧 Iniciando proceso de tara automática...[0m
+[0;32mI (9544) NIVOMETRO: Realizando tara de la balanza...[0m
+[0;32mI (9544) HX711: Realizando tara con 10 muestras...[0m
+[0;32mI (9644) HX711: Tara completada. Offset: 0[0m
+[0;32mI (9644) NIVOMETRO: Tara completada. Offset: 0[0m
+[0;32mI (9644) NIVOMETRO_MAIN: ✅ Tara completada exitosamente[0m
+[0;32mI (9644) NIVOMETRO_MAIN: 🎉 Todos los sensores inicializados correctamente[0m
+[0;32mI (9654) NIVOMETRO_MAIN: 📊 Configuración del sistema:[0m
+[0;32mI (9654) NIVOMETRO_MAIN:    HC-SR04P: Pines 12 (trigger) y 13 (echo)[0m
+[0;32mI (9664) NIVOMETRO_MAIN:    HX711: Pins 26 (DOUT) y 27 (SCK)[0m
+[0;32mI (9674) NIVOMETRO_MAIN:    VL53L0X: I2C puerto 0, dirección 0x29[0m
+[0;32mI (9704) tasks: Read: -1.00 cm, 0.00 kg, 0.00 mm[0m
+[0;32mI (9704) power_manager: Detected power source: Battery (low power)[0m
+[0;32mI (9704) tasks: sensor_task: next read in 300000 ms (low power)[0m
+[0;32mI (9714) tasks: tasks_start_all: all tasks started[0m
+[0;32mI (9714) NIVOMETRO_MAIN: 🚀 Sistema iniciado completamente[0m
+[0;32mI (9734) main_task: Returned from app_main()[0m
+[0;32mI (9734) storage: Register saved rec0[0m
+[0;32mI (9734) communication: Published to sensors/ultrasonic: {"value": -1.00, "timestamp": "2025-07-22T21:41:19Z"}[0m
+[0;32mI (9744) communication: Published to sensors/weight: {"value": 0.00, "timestamp": "2025-07-22T21:41:19Z"}[0m
+[0;32mI (9754) communication: Published to sensors/laser: {"value": 0.00, "timestamp": "2025-07-22T21:41:19Z"}[0m
+[0;32mI (9964) power_manager: Detected power source: Battery (low power)[0m
+[0;32mI (9964) tasks: Battery power: entering deep sleep[0m
+[0;32mI (9964) power_manager: Entering deep sleep for 30 seconds...[0m
