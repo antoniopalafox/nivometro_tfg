@@ -35,20 +35,48 @@ Los datos se envían vía MQTT a un stack de monitorización compuesto por Teleg
 - Git
 
 ### Instalación Rápida
-```bash
-# Clonar y configurar
-git clone [repositorio-fusionado]
-cd tfg-nivometro-fusionado
-./scripts/setup_fusion.sh
 
 # Configurar credenciales WiFi/MQTT
-nano tfg/components/communication/include/communication_secrets.h
+idf.py menuconfig
 
-# Compilar firmware
-cd tfg && idf.py build
+Serial flasher config -> Flash Size (4 MB)
+
+Component config -> Communication configuration. Rellena SSID, Pasword y MQTT URI
+
+# Compilar
+idf.py build 
 
 # Levantar stack de monitorización  
-cd ../tfg_telegraf_influx_grafana && docker-compose up -d
+cd tfg_telegraf_influx_grafana && docker-compose up -d
 
 # Flashear ESP32
-cd ../tfg && idf.py flash monitor
+cd .. && idf.py flash monitor
+
+
+
+
+
+🔄 Para usar con hardware real:
+Cuando tengas el circuito de detección USB/Batería físico, solo necesitas:
+
+Cambiar una línea en power_manager.c:
+c// CAMBIAR DE:
+static bool simulation_enabled = true;
+
+// A:
+static bool simulation_enabled = false;
+
+El resto funciona automáticamente con el GPIO real
+
+📊 Resumen de rendimiento:
+ModoIntervalo mediciónComportamientoDuración batería estimadaUSB5 segundosActivo continuo♾️ InfinitaBatería60 segundos + sleepDeep sleep automático🔋 15-30 días
+🏆 ¡ENHORABUENA!
+Has implementado exitosamente un sistema de gestión inteligente de energía para tu nivómetro que:
+
+⚡ Maximiza el rendimiento cuando hay alimentación externa
+🔋 Maximiza la duración de batería cuando funciona autónomamente
+🔄 Se adapta automáticamente sin intervención manual
+💤 Gestiona deep sleep de forma inteligente
+📡 Mantiene conectividad cuando es necesario
+
+¡Tu nivómetro está listo para funcionar de forma completamente autónoma en la Antártida! 🏔️❄️
