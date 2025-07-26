@@ -1,82 +1,81 @@
-# 🏔️ TFG Nivómetro Antártida - Proyecto Fusionado
+# 🏔️ TFG: Momitor de nesutrones Estación Antártica – Proyecto Conjunto
 
-Sistema completo de monitorización de nivel de nieve en la Antártida desarrollado como Trabajo Fin de Grado por Antonio Mata y Antonio Palafox.
+**Antonio Mata Marco & Antonio Palafox Moya**  
+Trabajo Fin de Grado en Ingeniería Telemática · Universidad de Alcalá
 
-## 🎯 Descripción
+---
 
-Sistema IoT basado en ESP32 que utiliza múltiples sensores para medir:
-- **Distancia de nieve** (HC-SR04P ultrasonido)
-- **Peso de nieve acumulada** (HX711 galga extensiométrica)  
-- **Distancia de precisión** (VL53L0X láser ToF)
+## Descripción
 
-Los datos se envían vía MQTT a un stack de monitorización compuesto por Telegraf, InfluxDB y Grafana.
+Se ha desarrollado una **estación IoT autónoma** para medir y transmitir en tiempo real la acumulación de nieve en la Antártida. El sistema combina:
 
-## 🛠️ Tecnologías
+- **HC-SR04P (ultrasónico)**  
+  Mide el espesor de la capa de nieve, diseñado para entornos extremos y resistente al agua.  
+- **Celda de carga + HX711**  
+  Estima el peso acumulado, permitiendo corregir posibles sesgos de lectura por la compactación de la nieve.  
+- **VL53L0X (láser ToF)**  
+  Obtiene distancias de alta precisión en rangos cortos para validar y afinar las lecturas ultrasónicas.
+
+Todas las lecturas se publican vía **MQTT** en:
+
+1. **Telegraf** – Agente que suscribe MQTT y envía datos a InfluxDB  
+2. **InfluxDB** – Base de datos de series temporales  
+3. **Grafana** – Dashboard web para visualización y análisis  
+
+Gracias a la **gestión de la alimentación**, el dispositivo puede funcionar **en los modos nominal y de bajo consumo**
+
+---
+
+## Tecnologías
 
 ### Hardware
-- **ESP32** (microcontrolador principal)
-- **HC-SR04P** (sensor ultrasónico resistente al agua)
-- **HX711** (amplificador para galga extensiométrica)
-- **VL53L0X** (sensor láser ToF de alta precisión)
+- **ESP32**: microcontrolador principal (Wi-Fi & Bluetooth).  
+- **HC-SR04P**: sensor de ultrasonidos resistente al agua.  
+- **HX711**: amplificador ADC para celda de carga.  
+- **VL53L0X**: sensor Time-of-Flight de alta precisión.
 
 ### Software
-- **ESP-IDF v5** (framework profesional ESP32)
-- **MQTT** (protocolo de comunicación IoT)
-- **Docker** + **Docker Compose** (containerización)
-- **Telegraf** (recolección de métricas)
-- **InfluxDB** (base de datos temporal)
-- **Grafana** (visualización de datos)
+- **ESP-IDF v5** + **FreeRTOS** (framework ESP32).  
+- **MQTT** (Mosquitto).  
+- **Docker** & **Docker Compose** (containerización).  
+- **Telegraf** (recolección de métricas MQTT→InfluxDB).  
+- **InfluxDB** (almacenamiento de series temporales).  
+- **Grafana** (visualización interactiva).
 
-## 🚀 Instalación y Uso
+---
+
+## Instalación y Uso
 
 ### Requisitos
-- ESP-IDF v5.0+
-- Docker y Docker Compose
-- Git
+- **ESP-IDF v5.0+**  
+- **Docker** & **Docker Compose**  
+- **Git**  
+- **Python 3** (para ESP-IDF)
+
+---
 
 ### Instalación Rápida
 
-#### Configurar credenciales WiFi/MQTT
-idf.py menuconfig
-
-Serial flasher config -> Flash Size (4 MB)
-
-Component config -> Communication configuration. Rellena SSID, Pasword y MQTT URI
-
-#### Compilar
-idf.py build 
-
-#### Levantar stack de monitorización  
-cd tfg_telegraf_influx_grafana && docker-compose up -d
-
-#### Flashear ESP32
-cd .. && idf.py flash monitor
-
-===============================================================================
-
-
-
-🔄 Para usar con hardware real:
-Cuando tengas el circuito de detección USB/Batería físico, solo necesitas:
-
-Cambiar una línea en power_manager.c:
-c// CAMBIAR DE:
-static bool simulation_enabled = true;
-
-// A:
-static bool simulation_enabled = false;
-
-El resto funciona automáticamente con el GPIO real
-
-📊 Resumen de rendimiento:
-ModoIntervalo mediciónComportamientoDuración batería estimadaUSB5 segundosActivo continuo♾️ InfinitaBatería60 segundos + sleepDeep sleep automático🔋 15-30 días
-🏆 ¡ENHORABUENA!
-Has implementado exitosamente un sistema de gestión inteligente de energía para tu nivómetro que:
-
-⚡ Maximiza el rendimiento cuando hay alimentación externa
-🔋 Maximiza la duración de batería cuando funciona autónomamente
-🔄 Se adapta automáticamente sin intervención manual
-💤 Gestiona deep sleep de forma inteligente
-📡 Mantiene conectividad cuando es necesario
-
-¡Tu nivómetro está listo para funcionar de forma completamente autónoma en la Antártida! 🏔️❄️
+1. **Clona el repositorio**  
+   ```bash
+   git clone https://github.com/antoniopalafox/nivometro_tfg.git
+   cd nivometro_tfg
+2. **Configurar credenciales Wi-Fi & MQTT**  
+   ```bash
+   idf.py menuconfig
+   Serial Flasher Config → Flash Size: 4 MB
+   Component Config → Communication configuration:
+   Rellenar WiFi SSID, WiFi Password y MQTT Broker URI.
+3. **Compilar**
+    ```bash
+    idf.py build
+4. **Desplegar monitorización**
+    ```bash
+    cd tfg_telegraf_influx_grafana
+    docker-compose up -d
+    Grafana en: http://localhost:3000
+    InfluxDB en: http:/localhost:8086 
+5. **Ejecutar ESP32**
+    ```bash
+    cd ..
+    idf.py flash monitor
