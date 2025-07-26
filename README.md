@@ -1,4 +1,4 @@
-# 🏔️ TFG: Momitor de nesutrones Estación Antártica – Proyecto Conjunto
+# 🏔️ TFG: Monitor de neutrones Estación Antártica Juan Carlos I – Proyecto Conjunto
 
 **Antonio Mata Marco & Antonio Palafox Moya**  
 Trabajo Fin de Grado en Ingeniería Telemática · Universidad de Alcalá
@@ -9,11 +9,11 @@ Trabajo Fin de Grado en Ingeniería Telemática · Universidad de Alcalá
 
 Se ha desarrollado una **estación IoT autónoma** para medir y transmitir en tiempo real la acumulación de nieve en la Antártida. El sistema combina:
 
-- **HC-SR04P (ultrasónico)**  
+- **HC-SR04P (ultrasonidos)**  
   Mide el espesor de la capa de nieve, diseñado para entornos extremos y resistente al agua.  
-- **Celda de carga + HX711**  
+- **Celda de carga + HX711 (peso)**  
   Estima el peso acumulado, permitiendo corregir posibles sesgos de lectura por la compactación de la nieve.  
-- **VL53L0X (láser ToF)**  
+- **VL53L0X (láser)**  
   Obtiene distancias de alta precisión en rangos cortos para validar y afinar las lecturas ultrasónicas.
 
 Todas las lecturas se publican vía **MQTT** en:
@@ -29,10 +29,10 @@ Gracias a la **gestión de la alimentación**, el dispositivo puede funcionar **
 ## Tecnologías
 
 ### Hardware
-- **ESP32**: microcontrolador principal (Wi-Fi & Bluetooth).  
-- **HC-SR04P**: sensor de ultrasonidos resistente al agua.  
-- **HX711**: amplificador ADC para celda de carga.  
-- **VL53L0X**: sensor Time-of-Flight de alta precisión.
+- **ESP32**: microcontrolador principal.  
+- **HC-SR04P**: sensor de ultrasonidos.  
+- **HX711**: sensor de peso.  
+- **VL53L0X**: sensor sensor láser.
 
 ### Software
 - **ESP-IDF v5** + **FreeRTOS** (framework ESP32).  
