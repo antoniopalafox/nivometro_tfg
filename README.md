@@ -1,4 +1,4 @@
-# 🏔️ TFG: Monitor de neutrones Estación Antártica Juan Carlos I – Proyecto Conjunto
+# Monitor de neutrones Estación Antártica Juan Carlos I – Proyecto Conjunto
 
 **Antonio Mata Marco & Antonio Palafox Moya**  
 Trabajo Fin de Grado en Ingeniería Telemática · Universidad de Alcalá
@@ -7,7 +7,7 @@ Trabajo Fin de Grado en Ingeniería Telemática · Universidad de Alcalá
 
 ## Descripción
 
-Se ha desarrollado una **estación IoT autónoma** para medir y transmitir en tiempo real la acumulación de nieve en la Antártida. El sistema combina:
+Se ha desarrollado una **estación IoT autónoma** para medir y transmitir en tiempo real la acumulación de nieve en la estación Antártica. El sistema combina:
 
 - **HC-SR04P (ultrasonidos)**  
   Mide el espesor de la capa de nieve, diseñado para entornos extremos y resistente al agua.  
@@ -54,19 +54,19 @@ Gracias a la **gestión de la alimentación**, el dispositivo puede funcionar **
 
 ---
 
-### Instalación Rápida
+### Modo de uso
 
-1. **Clona el repositorio**  
+1. **Clonar el repositorio**  
    ```bash
    git clone https://github.com/antoniopalafox/nivometro_tfg.git
    cd nivometro_tfg
-2. **Configurar credenciales Wi-Fi & MQTT**  
+2. **Configuración credenciales Wi-Fi & MQTT**  
    ```bash
    idf.py menuconfig
    Serial Flasher Config → Flash Size: 4 MB
    Component Config → Communication configuration:
-   Rellenar WiFi SSID, WiFi Password y MQTT Broker URI.
-3. **Compilar**
+   Rellenar WiFi SSID, WiFi Password y MQTT Broker URI con la configuración deseada.
+3. **Compilación**
     ```bash
     idf.py build
 4. **Desplegar monitorización**
