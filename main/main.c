@@ -262,6 +262,7 @@ void app_main(void) {
 
     // 9) ⚡ GESTIÓN DE ENERGÍA CON DETECCIÓN USB/BATERÍA ⚡
     power_manager_init();
+    //power_manager_force_battery_simulation();
     
     // Log del estado inicial de alimentación
     if (power_manager_is_usb_connected()) {

@@ -15,4 +15,13 @@ void power_manager_enter_deep_sleep(void);   // Configura y activa el deep sleep
 
 // Nuevas funciones para detección de alimentación
 power_source_t power_manager_get_source(void);    // Obtiene la fuente de alimentación actual (USB o batería)
-bool power_manager_is_usb_connected(void);        // Función de conveniencia: devuelve true si USB está conectado
+bool power_manager_is_usb_connected(void);        // Devuelve true si USB está conectado
+
+// -----------------------------------------------------------------------------
+// Estas tres funciones permiten forzar o reanudar la simulación de alimentación
+// (solo cuando `simulation_enabled == true` en power_manager.c).
+// -----------------------------------------------------------------------------
+/*void power_manager_force_usb_simulation(void);     // Fuerza modo USB en simulación
+void power_manager_force_battery_simulation(void); // Fuerza modo BATERÍA en simulación
+void power_manager_resume_auto_simulation(void);   // Reactiva alternancia automática de simulación
+*/
