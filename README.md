@@ -89,6 +89,7 @@ Gracias a la **gestión de la alimentación**, el dispositivo puede funcionar **
   Grafana en: http://localhost:3000
 
   InfluxDB en: http://localhost:8086
+  
 6. **Ejecutar ESP32**
    ```bash
    cd ..
