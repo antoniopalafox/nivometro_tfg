@@ -27,19 +27,19 @@ int data_formatter_format_json(const sensor_data_t *data, char *buf, size_t bufs
 
 // Estados del LED (6 estados diferenciados)
 typedef enum {
-    LED_STATE_OFF,              // Sistema apagado
-    LED_STATE_NORMAL,           // Normal calibrado - parpadeo muy lento (2000ms)
-    LED_STATE_WARNING,          // Normal sin calibrar - parpadeo medio (800ms)  
-    LED_STATE_CALIBRATION,      // Modo calibración - parpadeo rápido (300ms)
-    LED_STATE_ERROR,            // Error/fallo - parpadeo muy rápido (150ms)
-    LED_STATE_SOLID_ON          // Proceso completo - encendido fijo
+    LED_STATE_OFF,              // ⚫ Sistema apagado
+    LED_STATE_NORMAL,           // 🟢 Normal calibrado - parpadeo muy lento (2000ms)
+    LED_STATE_WARNING,          // 🟡 Normal sin calibrar - parpadeo medio (800ms)  
+    LED_STATE_CALIBRATION,      // 🔵 Modo calibración - parpadeo rápido (300ms)
+    LED_STATE_ERROR,            // 🔴 Error/fallo - parpadeo muy rápido (150ms)
+    LED_STATE_SOLID_ON          // ⚪ Proceso completo - encendido fijo
 } led_state_t;
 
 // Períodos fijos para cada estado (en milisegundos)
-#define LED_PERIOD_NORMAL_MS        2000    // Muy lento - sistema OK
-#define LED_PERIOD_WARNING_MS       800     // Medio - requiere atención
-#define LED_PERIOD_CALIBRATION_MS   300     // Rápido - proceso activo
-#define LED_PERIOD_ERROR_MS         150     // Muy rápido - urgente
+#define LED_PERIOD_NORMAL_MS        2000    // 🟢 Muy lento - sistema OK
+#define LED_PERIOD_WARNING_MS       800     // 🟡 Medio - requiere atención
+#define LED_PERIOD_CALIBRATION_MS   300     // 🔵 Rápido - proceso activo
+#define LED_PERIOD_ERROR_MS         150     // 🔴 Muy rápido - urgente
 
 // Funciones de control LED
 void led_init(void);                        // Inicializa el GPIO del LED
@@ -51,6 +51,10 @@ void led_stop_task(void);                   // Detiene la tarea de control del L
 // ==============================================================================
 // SISTEMA DE CALIBRACIÓN - GESTIÓN NVS
 // ==============================================================================
+
+// Definiciones fijas para NVS
+#define CALIBRATION_NVS_NAMESPACE   "calibration"
+#define CALIBRATION_MAGIC_NUMBER    0xCAFEBABE
 
 // Definiciones para calibración
 #define BOOT_BUTTON_PIN         GPIO_NUM_0   // Botón BOOT de la ESP32
