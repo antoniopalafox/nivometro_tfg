@@ -5,6 +5,7 @@
 sdkconfig
 sdkconfig.old
 sdkconfig.h
+.env
 build/
 CMakeCache.txt
 CMakeFiles/

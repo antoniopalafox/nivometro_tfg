@@ -1,4 +1,4 @@
-# Monitor de neutrones Estación Antártica Juan Carlos I – Proyecto Conjunto
+# Nivómetro de neutrones Estación Antártica Juan Carlos I – Proyecto de Fin de Grado
 
 **Antonio Mata Marco & Antonio Palafox Moya**  
 Trabajo Fin de Grado en Ingeniería Telemática · Universidad de Alcalá
