@@ -83,6 +83,15 @@ static void run_calibration_mode(void) {
     if (tare_result == ESP_OK) {
         ESP_LOGI(TAG, "✅ Tara completada correctamente");
         cal_data.hx711_offset = g_nivometro.scale.offset;
+        
+        // *** GUARDAR TARA INMEDIATAMENTE EN NVS ***
+        cal_data.calibrated = false; // Aún no está completamente calibrado
+        esp_err_t tare_save_result = calibration_save_to_nvs(&cal_data);
+        if (tare_save_result == ESP_OK) {
+            ESP_LOGI(TAG, "💾 Tara guardada en NVS");
+        } else {
+            ESP_LOGW(TAG, "⚠️  Error guardando tara: %s", esp_err_to_name(tare_save_result));
+        }
     } else {
         ESP_LOGE(TAG, "❌ Error en tara: %s", esp_err_to_name(tare_result));
         led_set_state(LED_STATE_ERROR);

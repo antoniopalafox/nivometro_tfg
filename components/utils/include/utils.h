@@ -35,11 +35,11 @@ typedef enum {
     LED_STATE_SOLID_ON          // ⚪ Proceso completo - encendido fijo
 } led_state_t;
 
-// Períodos fijos para cada estado (en milisegundos)
-#define LED_PERIOD_NORMAL_MS        2000    // 🟢 Muy lento - sistema OK
-#define LED_PERIOD_WARNING_MS       800     // 🟡 Medio - requiere atención
-#define LED_PERIOD_CALIBRATION_MS   300     // 🔵 Rápido - proceso activo
-#define LED_PERIOD_ERROR_MS         150     // 🔴 Muy rápido - urgente
+// Períodos fijos para cada estado (en milisegundos) - VALORES MÁS VISIBLES
+#define LED_PERIOD_NORMAL_MS        1000    // 🟢 Lento - sistema OK (era 2000ms)
+#define LED_PERIOD_WARNING_MS       400     // 🟡 Medio - requiere atención (era 800ms)
+#define LED_PERIOD_CALIBRATION_MS   150     // 🔵 Rápido - proceso activo (era 300ms)
+#define LED_PERIOD_ERROR_MS         75      // 🔴 Muy rápido - urgente (era 150ms)
 
 // Funciones de control LED
 void led_init(void);                        // Inicializa el GPIO del LED
