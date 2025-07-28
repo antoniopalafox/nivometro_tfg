@@ -86,10 +86,10 @@ Gracias a la **gestión de la alimentación**, el dispositivo puede funcionar **
     cd tfg_telegraf_influx_grafana
     docker-compose up -d
     ```
-  Grafana en: http://localhost:3000
+   Grafana en: http://localhost:3000
 
-  InfluxDB en: http://localhost:8086
-  
+   InfluxDB en: http://localhost:8086
+
 6. **Ejecutar ESP32**
    ```bash
    cd ..
