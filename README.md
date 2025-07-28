@@ -69,13 +69,24 @@ Gracias a la **gestión de la alimentación**, el dispositivo puede funcionar **
 3. **Compilación**
     ```bash
     idf.py build
-4. **Desplegar monitorización**
+4. **Configurar variables de entorno**
+   Copia la plantilla y rellena tus credenciales reales:
     ```bash
     cd tfg_telegraf_influx_grafana
-    docker-compose up -d
-    Grafana en: http://localhost:3000
-    InfluxDB en: http:/localhost:8086 
-5. **Ejecutar ESP32**
+    cp .env.example .env
+    # abre .env en tu editor y completa:
+    # DOCKER_INFLUXDB_INIT_USERNAME=<tu_usuario_influx>
+    # DOCKER_INFLUXDB_INIT_PASSWORD=<tu_password_influx>
+    # DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=<tu_token_influx>
+    # GF_ADMIN_USER=<tu_usuario_grafana>
+    # GF_ADMIN_PASSWORD=<tu_password_grafana>
+5. **Desplegar monitorización**  
+   ```bash
+   cd tfg_telegraf_influx_grafana
+   docker-compose up -d
+Grafana en: http://localhost:3000
+InfluxDB en: http://localhost:8086
+6. **Ejecutar ESP32**
     ```bash
     cd ..
     idf.py flash monitor
