@@ -13,7 +13,7 @@ typedef struct {
     
     // Metadatos
     uint64_t timestamp_us;
-    uint8_t sensor_status;           // Bits: [1]=HX711, [0]=HC-SR04P (VL53L0X eliminado)
+    uint8_t sensor_status;           // Bits: [1]=HX711, [0]=HC-SR04P 
     float battery_voltage;
     int8_t temperature_c;            // Temperatura estimada
 } nivometro_data_t;
