@@ -1,3 +1,4 @@
+#File: components/communication/Kconfig
 menu "Communication configuration"
 
     config WIFI_SSID

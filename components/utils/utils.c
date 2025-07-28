@@ -18,9 +18,8 @@ int data_formatter_format_json(const sensor_data_t *data, char *buf, size_t bufs
 {
     // Serializa los valores de sensores en un json dentro de buf
     return snprintf(buf, bufsize,
-        "{\"distance_cm\":%.2f,\"weight_kg\":%.2f,\"laser_mm\":%.2f}",
+        "{\"distance_cm\":%.2f,\"weight_kg\":%.2f}",
         data->distance_cm,
-        data->weight_kg,
-        data->laser_mm
+        data->weight_kg
     );
 }

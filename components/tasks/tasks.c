@@ -1,3 +1,4 @@
+//File: components/tasks/tasks.c
 #include "tasks.h"
 #include "nivometro_sensors.h"
 #include "storage.h"
@@ -30,14 +31,14 @@ extern nivometro_t g_nivometro;
 #define PUBLISH_TASK_PRI     (tskIDLE_PRIORITY + 1)
 
 /**
- * Tarea de lectura de sensores con gestión inteligente de energía - VERSIÓN CORREGIDA
+ * Tarea de lectura de sensores con gestión inteligente de energía 
  */
 static void sensor_task(void* _) {
     sensor_data_t d;
     nivometro_data_t nivometro_data;
     uint32_t measurement_count = 0;
     
-    ESP_LOGI(TAG, "📊 Tarea de sensores iniciada con gestión inteligente de energía - VERSIÓN CORREGIDA");
+    ESP_LOGI(TAG, "📊 Tarea de sensores iniciada con gestión inteligente de energía");
     
     for (;;) {
         measurement_count++;
@@ -84,8 +85,9 @@ static void sensor_task(void* _) {
             if (xQueueSend(data_queue, &d, 0) != pdTRUE) {
                 ESP_LOGW(TAG, "⚠️  [%s] Cola llena, descartando muestra", mode_str);
             } else {
-                ESP_LOGI(TAG, "✅ [%s] Datos enviados: %.2f cm, %.2f kg, %.2f mm", 
-                        mode_str, d.distance_cm, d.weight_kg, d.laser_mm);
+                // VL53L0X eliminado del log - solo HC-SR04P y HX711
+                ESP_LOGI(TAG, "✅ [%s] Datos enviados: %.2f cm, %.2f kg", 
+                        mode_str, d.distance_cm, d.weight_kg);
             }
         } else {
             ESP_LOGE(TAG, "❌ Error leyendo sensores: %s", esp_err_to_name(result));
@@ -100,13 +102,13 @@ static void sensor_task(void* _) {
 }
 
 /**
- * Tarea de publicación con gestión inteligente de energía - VERSIÓN CORREGIDA
+ * Tarea de publicación con gestión inteligente de energía 
  */
 static void publish_task(void* _) {
     sensor_data_t d;
     uint32_t publish_count = 0;
 
-    ESP_LOGI(TAG, "📡 Tarea de publicación iniciada con gestión inteligente de energía - VERSIÓN CORREGIDA");
+    ESP_LOGI(TAG, "📡 Tarea de publicación iniciada con gestión inteligente de energía");
 
     for (;;) {
         // Bloquea hasta recibir un dato de sensor
@@ -198,7 +200,7 @@ static void publish_task(void* _) {
 }
 
 void tasks_start_all(void) {
-    ESP_LOGI(TAG, "🚀 Iniciando todas las tareas con gestión inteligente de energía - VERSIÓN CORREGIDA");
+    ESP_LOGI(TAG, "🚀 Iniciando todas las tareas con gestión inteligente de energía - VERSIÓN SIN VL53L0X");
     ESP_LOGI(TAG, "⚡ Intervalos configurados:");
     ESP_LOGI(TAG, "   🔌 USB: %d ms (%d segundos)", SENSOR_PERIOD_USB_MS, SENSOR_PERIOD_USB_MS/1000);
     ESP_LOGI(TAG, "   🔋 BATERÍA: %d ms (%d segundos)", SENSOR_PERIOD_BATTERY_MS, SENSOR_PERIOD_BATTERY_MS/1000);

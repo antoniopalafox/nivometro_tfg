@@ -1,3 +1,5 @@
+//File: components/communication/communication.c
+
 #include "communication.h"
 #include "sdkconfig.h"
 #include "esp_netif.h"
@@ -24,7 +26,6 @@ static const int MQTT_CONNECTED_BIT = BIT1;            // Bit que marca mqtt lis
 // Topics mqtt donde se publicarán los datos
 static const char* MQTT_TOPIC_ULTRASONIC = "sensors/ultrasonic";
 static const char* MQTT_TOPIC_WEIGHT     = "sensors/weight";
-static const char* MQTT_TOPIC_LASER      = "sensors/laser";
 
 // Prototipos de funciones internas
 static void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data);
@@ -160,8 +161,4 @@ void communication_publish(const sensor_data_t* data) {
     esp_mqtt_client_publish(mqtt_client, MQTT_TOPIC_WEIGHT, msg, 0, 1, 0);
     ESP_LOGI(TAG, "Published to %s: %s", MQTT_TOPIC_WEIGHT, msg);
 
-    // Publicar valor del sensor de laser
-    snprintf(msg, sizeof(msg), "{\"value\": %.2f, \"timestamp\": \"%s\"}", data->laser_mm, ts);
-    esp_mqtt_client_publish(mqtt_client, MQTT_TOPIC_LASER, msg, 0, 1, 0);
-    ESP_LOGI(TAG, "Published to %s: %s", MQTT_TOPIC_LASER, msg);
 }
