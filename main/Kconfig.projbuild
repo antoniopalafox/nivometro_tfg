@@ -1,0 +1,97 @@
+# ==============================================================================
+# ARCHIVO: main/Kconfig.projbuild
+# Configuraciones para calibración de sensores del nivómetro
+# ==============================================================================
+
+menu "Calibración del Nivómetro"
+
+    menu "Parámetros de Calibración HX711 (Balanza)"
+        
+        config CALIBRATION_HX711_KNOWN_WEIGHT
+            int "Peso conocido para calibración (gramos)"
+            range 50 5000
+            default 500
+            help
+                Peso en gramos del objeto conocido que se usará para calibrar
+                la balanza HX711.
+                
+        config CALIBRATION_HX711_SAMPLES
+            int "Número de mediciones para calibración"
+            range 5 20
+            default 10
+            help
+                Cantidad de mediciones que se tomarán para calcular
+                el promedio durante la calibración del HX711.
+                Más mediciones = mayor precisión pero más tiempo.
+                
+        config CALIBRATION_HX711_TOLERANCE_PERCENT
+            int "Tolerancia de validación (%)"
+            range 1 15
+            default 3
+            help
+                Porcentaje de tolerancia para validar que la calibración
+                de peso es correcta. Un valor de 3% significa que la
+                medición debe estar dentro del ±3% del peso conocido.
+
+    endmenu
+
+    menu "Parámetros de Calibración HC-SR04P (Ultrasonido)"
+        
+        config CALIBRATION_HCSR04P_KNOWN_DISTANCE
+            int "Distancia conocida para calibración (cm)"
+            range 5 400
+            default 30
+            help
+                Distancia en centímetros a un objeto conocido que se usará
+                para calibrar el sensor ultrasónico HC-SR04P.
+                
+                IMPORTANTE: Coloca el objeto perpendicular al sensor
+                y mide la distancia con precisión.
+        
+        config CALIBRATION_HCSR04P_SAMPLES
+            int "Número de mediciones para calibración"
+            range 5 20
+            default 10
+            help
+                Cantidad de mediciones que se tomarán para calcular
+                el promedio durante la calibración del HC-SR04P.
+                Más mediciones = mayor precisión pero más tiempo.
+                
+        config CALIBRATION_HCSR04P_TOLERANCE_PERCENT
+            int "Tolerancia de validación (%)"
+            range 1 15
+            default 3
+            help
+                Porcentaje de tolerancia para validar que la calibración
+                de distancia es correcta. Un valor de 3% significa que
+                el promedio debe estar dentro del ±3% de la distancia conocida.
+
+    endmenu
+
+    menu "Configuración del Proceso de Calibración"
+        
+        config CALIBRATION_BOOT_HOLD_TIME_MS
+            int "Tiempo mínimo para activar calibración (ms)"
+            range 1000 10000
+            default 3000
+            help
+                Tiempo en milisegundos que se debe mantener presionado
+                el botón BOOT durante el arranque para entrar en modo
+                calibración.
+                
+                - 1000ms (1s): Rápido pero puede ser accidental
+                - 3000ms (3s): Equilibrio recomendado
+                - 5000ms (5s): Más seguro pero lento
+                
+        config CALIBRATION_CONFIRMATION_TIMEOUT_S
+            int "Timeout para confirmación de pasos (segundos)"
+            range 10 300
+            default 30
+            help
+                Tiempo máximo en segundos que el sistema esperará
+                por la confirmación del usuario en cada paso de
+                calibración antes de cancelar el proceso.
+
+    endmenu
+
+endmenu

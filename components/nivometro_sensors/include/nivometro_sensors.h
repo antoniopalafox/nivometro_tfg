@@ -1,4 +1,3 @@
-// File: components/nivometro_sensors/include/nivometro_sensors.h
 #pragma once
 
 #include "hcsr04p.h"
@@ -51,7 +50,10 @@ typedef struct {
     bool initialized;
 } nivometro_t;
 
-// Funciones principales
+// ==============================================================================
+// FUNCIONES PRINCIPALES ORIGINALES
+// ==============================================================================
+
 esp_err_t nivometro_init(nivometro_t *nivometro, const nivometro_config_t *config);
 esp_err_t nivometro_read_all_sensors(nivometro_t *nivometro, nivometro_data_t *data);
 esp_err_t nivometro_calibrate_all(nivometro_t *nivometro);
@@ -66,3 +68,79 @@ bool nivometro_is_sensor_working(uint8_t status, int sensor_index);
 
 // Función de conversión entre estructuras
 void nivometro_data_to_sensor_data(const nivometro_data_t *src, sensor_data_t *dst);
+
+// ==============================================================================
+// FUNCIONES DE CALIBRACIÓN AVANZADA
+// ==============================================================================
+
+/**
+ * Calibra el sensor HC-SR04P con distancia conocida configurable
+ * @param nivometro Puntero al objeto nivómetro
+ * @param known_distance_cm Distancia conocida en centímetros
+ * @param samples Número de mediciones a promediar
+ * @param tolerance_percent Tolerancia máxima aceptable (%)
+ * @return Factor de calibración calculado o 0.0f si falla
+ */
+float nivometro_calibrate_ultrasonic(nivometro_t *nivometro, 
+                                   float known_distance_cm, 
+                                   int samples, 
+                                   float tolerance_percent);
+
+/**
+ * Calibra el sensor HX711 con validación automática
+ * @param nivometro Puntero al objeto nivómetro
+ * @param known_weight_g Peso conocido en gramos
+ * @param tolerance_percent Tolerancia máxima aceptable (%)
+ * @return ESP_OK si la calibración es exitosa y válida
+ */
+esp_err_t nivometro_calibrate_scale_with_validation(nivometro_t *nivometro, 
+                                                  float known_weight_g, 
+                                                  float tolerance_percent);
+
+/**
+ * Verifica que los sensores estén funcionando correctamente
+ * @param nivometro Puntero al objeto nivómetro
+ * @return true si todos los sensores están operativos
+ */
+bool nivometro_verify_sensors_health(nivometro_t *nivometro);
+
+/**
+ * Obtiene el factor de calibración actual del HC-SR04P
+ * @param nivometro Puntero al objeto nivómetro
+ * @return Factor de calibración actual
+ */
+float nivometro_get_ultrasonic_calibration_factor(const nivometro_t *nivometro);
+
+/**
+ * Obtiene los parámetros de calibración actuales del HX711
+ * @param nivometro Puntero al objeto nivómetro
+ * @param scale_factor Puntero para retornar el factor de escala
+ * @param offset Puntero para retornar el offset/tara
+ */
+void nivometro_get_scale_calibration_params(const nivometro_t *nivometro, 
+                                          float *scale_factor, 
+                                          int32_t *offset);
+
+/**
+ * Aplica factores de calibración específicos a los sensores
+ * @param nivometro Puntero al objeto nivómetro
+ * @param hcsr04p_factor Factor de calibración para HC-SR04P
+ * @param hx711_scale Factor de escala para HX711
+ * @param hx711_offset Offset/tara para HX711
+ * @return ESP_OK si se aplicaron correctamente
+ */
+esp_err_t nivometro_apply_calibration_factors(nivometro_t *nivometro,
+                                            float hcsr04p_factor,
+                                            float hx711_scale,
+                                            int32_t hx711_offset);
+
+/**
+ * Realiza una prueba de calibración completa
+ * @param nivometro Puntero al objeto nivómetro
+ * @param known_weight_g Peso conocido para HX711
+ * @param known_distance_cm Distancia conocida para HC-SR04P
+ * @return ESP_OK si todos los sensores se calibran correctamente
+ */
+esp_err_t nivometro_full_calibration_test(nivometro_t *nivometro,
+                                        float known_weight_g,
+                                        float known_distance_cm);
