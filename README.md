@@ -70,7 +70,7 @@ Gracias a la **gestión de la alimentación**, el dispositivo puede funcionar **
     ```bash
     idf.py build
 4. **Configurar variables de entorno**
-   Copia la plantilla y rellena tus credenciales reales:
+Copia la plantilla y rellena tus credenciales reales:
     ```bash
     cd tfg_telegraf_influx_grafana
     cp .env.example .env
