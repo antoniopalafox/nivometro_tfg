@@ -12,7 +12,7 @@ static const char* TAG = "power_manager";
 // Para cambiar entre MODO SIMULACIÓN y MODO REAL,
 // ajusta la variable `simulation_enabled` a `true` o `false`.
 // -------------------------------------------------------------------------
-static bool simulation_enabled = true;  // false = power_online, true = power_battery
+static bool simulation_enabled = false;  // false = power_online, true = power_battery
 // -------------------------------------------------------------------------
 
 // ===== VARIABLES DE SIMULACIÓN =====
@@ -112,7 +112,7 @@ bool power_manager_is_usb_connected(void) {
 }
 
 // Control manual en simulación
-void power_manager_force_usb_simulation(void) {
+/*void power_manager_force_usb_simulation(void) {
     if (simulation_enabled) {
         simulated_source = POWER_SOURCE_USB;
         last_switch_time = get_time_ms();
@@ -126,4 +126,4 @@ void power_manager_force_battery_simulation(void) {
         last_switch_time = get_time_ms();
         ESP_LOGI(TAG, "🔋 MANUAL: Forzando modo BATERÍA");
     }
-}
+}*/

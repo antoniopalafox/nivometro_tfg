@@ -107,6 +107,10 @@ static void led_control_task(void *pvParameters) {
 }
 
 void led_init(void) {
+    // CAMBIO: Configuración más robusta para GPIO 16 (evitar conflictos como en GPIO 2)
+    // Resetear completamente el pin primero
+    gpio_reset_pin(LED_STATUS_PIN);
+    
     // Configurar GPIO del LED
     gpio_config_t led_config = {
         .pin_bit_mask = (1ULL << LED_STATUS_PIN),
@@ -115,13 +119,20 @@ void led_init(void) {
         .pull_down_en = GPIO_PULLDOWN_DISABLE,
         .intr_type = GPIO_INTR_DISABLE
     };
-    gpio_config(&led_config);
+    
+    esp_err_t result = gpio_config(&led_config);
+    if (result != ESP_OK) {
+        ESP_LOGE(TAG, "❌ Error configurando GPIO %d: %s", LED_STATUS_PIN, esp_err_to_name(result));
+        return;
+    }
     
     // LED inicialmente apagado
     gpio_set_level(LED_STATUS_PIN, 0);
     current_led_state = LED_STATE_OFF;
     
-    ESP_LOGI(TAG, "💙 LED de estado inicializado en GPIO %d", LED_STATUS_PIN);
+    // CAMBIO: Mensaje actualizado para reflejar que es LED externo en GPIO 16
+    ESP_LOGI(TAG, "💙 LED de estado inicializado en GPIO %d (LED externo)", LED_STATUS_PIN);
+    ESP_LOGI(TAG, "🔌 CONEXIÓN: GPIO 16 → Resistencia 330Ω → LED+ → LED- → GND");
 }
 
 void led_start_task(void) {
@@ -231,17 +242,57 @@ esp_err_t calibration_clear_nvs(void) {
     nvs_handle_t nvs_handle;
     esp_err_t err;
     
+    // CAMBIO: Función mejorada para limpiar completamente el namespace de calibración
     err = nvs_open(CALIBRATION_NVS_NAMESPACE, NVS_READWRITE, &nvs_handle);
     if (err != ESP_OK) {
+        // Si no se puede abrir, probablemente no existe datos previos
+        if (err == ESP_ERR_NVS_NOT_FOUND) {
+            ESP_LOGI(TAG, "ℹ️ No existe namespace de calibración previo");
+            return ESP_ERR_NVS_NOT_FOUND;
+        }
+        ESP_LOGE(TAG, "❌ Error abriendo NVS para limpieza: %s", esp_err_to_name(err));
         return err;
     }
     
-    err = nvs_erase_key(nvs_handle, "cal_data");
-    nvs_commit(nvs_handle);
+    // Borrar todo el namespace (más efectivo que solo la key)
+    err = nvs_erase_all(nvs_handle);
+    if (err == ESP_OK) {
+        ESP_LOGI(TAG, "🗑️ Namespace de calibración completamente limpiado");
+    } else if (err == ESP_ERR_NVS_NOT_FOUND) {
+        ESP_LOGI(TAG, "ℹ️ No había datos de calibración que limpiar");
+        err = ESP_OK; // No es un error real
+    } else {
+        ESP_LOGE(TAG, "❌ Error borrando datos: %s", esp_err_to_name(err));
+    }
+    
+    // Confirmar cambios
+    esp_err_t commit_err = nvs_commit(nvs_handle);
+    if (commit_err != ESP_OK) {
+        ESP_LOGW(TAG, "⚠️ Error confirmando limpieza: %s", esp_err_to_name(commit_err));
+    }
+    
     nvs_close(nvs_handle);
     
+    return err;
+}
+
+esp_err_t calibration_erase_all_nvs_partition(void) {
+    ESP_LOGI(TAG, "🗑️ Borrando TODA la partición NVS para liberar máximo espacio...");
+    
+    // Borrar completamente toda la partición NVS
+    esp_err_t err = nvs_flash_erase();
     if (err == ESP_OK) {
-        ESP_LOGI(TAG, "🗑️  Datos de calibración eliminados de NVS");
+        ESP_LOGI(TAG, "✅ Toda la partición NVS borrada");
+        
+        // Reinicializar NVS completamente
+        err = nvs_flash_init();
+        if (err == ESP_OK) {
+            ESP_LOGI(TAG, "✅ NVS reinicializado completamente");
+        } else {
+            ESP_LOGE(TAG, "❌ Error reinicializando NVS: %s", esp_err_to_name(err));
+        }
+    } else {
+        ESP_LOGE(TAG, "❌ Error borrando partición NVS: %s", esp_err_to_name(err));
     }
     
     return err;

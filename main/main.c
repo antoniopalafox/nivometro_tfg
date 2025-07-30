@@ -53,6 +53,16 @@ static void run_calibration_mode(void) {
     // Cambiar LED a modo calibración (parpadeo rápido)
     led_set_state(LED_STATE_CALIBRATION);
     
+    // CAMBIO: Limpiar TODA la partición NVS para máximo espacio disponible
+    ESP_LOGI(TAG, "🗑️ Limpiando TODA la partición NVS para garantizar espacio...");
+    ESP_LOGI(TAG, "💡 NOTA: Se borrarán WiFi, configuraciones y datos previos");
+    esp_err_t clear_result = calibration_erase_all_nvs_partition();
+    if (clear_result == ESP_OK) {
+        ESP_LOGI(TAG, "✅ Partición NVS completamente limpiada y reinicializada");
+    } else {
+        ESP_LOGW(TAG, "⚠️ Error limpiando partición NVS: %s (continuando...)", esp_err_to_name(clear_result));
+    }
+    
     // Mostrar parámetros configurados
     ESP_LOGI(TAG, "📋 Parámetros de calibración (desde menuconfig):");
     ESP_LOGI(TAG, "   🏋️  Peso conocido HX711: %d gramos", CONFIG_CALIBRATION_HX711_KNOWN_WEIGHT);
@@ -298,7 +308,7 @@ void app_main(void) {
 
     // 13) ⚡ GESTIÓN DE ENERGÍA CON DETECCIÓN USB/BATERÍA ⚡
     power_manager_init();
-    power_manager_force_battery_simulation();
+    //power_manager_force_battery_simulation();
     
     // Log del estado inicial de alimentación
     if (power_manager_is_usb_connected()) {
@@ -313,32 +323,20 @@ void app_main(void) {
     timer_manager_init();
     ESP_LOGI(TAG, "✅ Timer manager inicializado");
 
-    // 15) Proceso de tara automática (solo si está calibrado)
-    if (calibration_valid) {
-        ESP_LOGI(TAG, "🔧 Iniciando proceso de tara automática...");
-        vTaskDelay(pdMS_TO_TICKS(2000));
-        ret = nivometro_tare_scale(&g_nivometro);
-        if (ret == ESP_OK) {
-            ESP_LOGI(TAG, "✅ Tara completada exitosamente");
-        } else {
-            ESP_LOGW(TAG, "⚠️  Error en tara, continuando...");
-        }
-    } else {
-        ESP_LOGW(TAG, "⚠️  Saltando tara automática - Sistema sin calibrar");
-    }
-
-    // 16) Log de configuración detallada
+    // 15) Log de configuración detallada
     ESP_LOGI(TAG, "🎉 Todos los sensores inicializados correctamente");
     ESP_LOGI(TAG, "📊 Configuración del sistema:");
     ESP_LOGI(TAG, "   HC-SR04P: Pines %d (trigger) y %d (echo)", HCSR04P_TRIGGER_PIN, HCSR04P_ECHO_PIN);
     ESP_LOGI(TAG, "   HX711: Pines %d (DOUT) y %d (SCK)", HX711_DOUT_PIN, HX711_SCK_PIN);
     ESP_LOGI(TAG, "   Calibración: %s", calibration_valid ? "✅ VÁLIDA" : "⚠️  PENDIENTE");
     ESP_LOGI(TAG, "   Power Management: GPIO 34 para detección USB/Batería");
-
+    // CAMBIO: Información actualizada sobre LED externo
+    ESP_LOGI(TAG, "   LED Estado: GPIO %d (LED externo - GPIO 2 tenía conflicto USB)", LED_STATUS_PIN);
+    
     // 17) ⚡ ARRANCAR TAREAS CON GESTIÓN INTELIGENTE DE ENERGÍA ⚡
     tasks_start_all();
 
-    ESP_LOGI(TAG, "🚀 Sistema iniciado completamente (sin VL53L0X)");
+    ESP_LOGI(TAG, "🚀 Sistema iniciado completamente");
     ESP_LOGI(TAG, "🔍 Monitorea los logs para ver el comportamiento según la fuente de alimentación");
     if (!calibration_valid) {
         ESP_LOGW(TAG, "⚠️  RECORDATORIO: Para calibrar, reinicia manteniendo BOOT presionado");
