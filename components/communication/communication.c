@@ -78,7 +78,9 @@ void communication_init(void) {
 
     // 8) Configurar y arrancar cliente MQTT usando URI de sdkconfig
     esp_mqtt_client_config_t mqtt_cfg = {
-        .broker.address.uri = CONFIG_MQTT_URI
+    //    .broker.address.uri = CONFIG_MQTT_URI
+          .broker.address.uri = "mqtt://broker.hivemq.com:1883"
+
     };
     mqtt_client = esp_mqtt_client_init(&mqtt_cfg);
     ESP_ERROR_CHECK(esp_mqtt_client_register_event(

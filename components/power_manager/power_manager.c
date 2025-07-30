@@ -12,7 +12,7 @@ static const char* TAG = "power_manager";
 // Para cambiar entre MODO SIMULACIÓN y MODO REAL,
 // ajusta la variable `simulation_enabled` a `true` o `false`.
 // -------------------------------------------------------------------------
-static bool simulation_enabled = false;  // false = modo real, true = simulación
+static bool simulation_enabled = true;  // false = power_online, true = power_battery
 // -------------------------------------------------------------------------
 
 // ===== VARIABLES DE SIMULACIÓN =====

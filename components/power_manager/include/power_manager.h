@@ -21,7 +21,6 @@ bool power_manager_is_usb_connected(void);        // Devuelve true si USB está 
 // Estas tres funciones permiten forzar o reanudar la simulación de alimentación
 // (solo cuando `simulation_enabled == true` en power_manager.c).
 // -----------------------------------------------------------------------------
-/*void power_manager_force_usb_simulation(void);     // Fuerza modo USB en simulación
+void power_manager_force_usb_simulation(void);     // Fuerza modo USB en simulación
 void power_manager_force_battery_simulation(void); // Fuerza modo BATERÍA en simulación
 void power_manager_resume_auto_simulation(void);   // Reactiva alternancia automática de simulación
-*/
