@@ -13,7 +13,7 @@
 #include "nvs.h"
 #include "driver/gpio.h"
 
-static const char* TAG = "UTILS";
+static const char* TAG = "utils";
 
 // ==============================================================================
 // FUNCIONES ORIGINALES DE UTILS
@@ -56,7 +56,7 @@ static void led_control_task(void *pvParameters) {
     bool led_physical_state = false;
     uint32_t delay_ms;
     
-    ESP_LOGI(TAG, "🟦 Tarea de control LED iniciada");
+    ESP_LOGI(TAG, "Tarea de control LED iniciada");
     
     while (1) {
         switch (current_led_state) {
@@ -122,7 +122,7 @@ void led_init(void) {
     
     esp_err_t result = gpio_config(&led_config);
     if (result != ESP_OK) {
-        ESP_LOGE(TAG, "❌ Error configurando GPIO %d: %s", LED_STATUS_PIN, esp_err_to_name(result));
+        ESP_LOGE(TAG, "Error configurando GPIO %d: %s", LED_STATUS_PIN, esp_err_to_name(result));
         return;
     }
     
@@ -131,14 +131,14 @@ void led_init(void) {
     current_led_state = LED_STATE_OFF;
     
     // CAMBIO: Mensaje actualizado para reflejar que es LED externo en GPIO 16
-    ESP_LOGI(TAG, "💙 LED de estado inicializado en GPIO %d (LED externo)", LED_STATUS_PIN);
-    ESP_LOGI(TAG, "🔌 CONEXIÓN: GPIO 16 → Resistencia 330Ω → LED+ → LED- → GND");
+    ESP_LOGI(TAG, "LED de estado inicializado en GPIO %d (LED externo)", LED_STATUS_PIN);
+    ESP_LOGI(TAG, "CONEXIÓN: GPIO 16 → Resistencia 330Ω → LED+ → LED- → GND");
 }
 
 void led_start_task(void) {
     if (led_task_handle == NULL) {
         xTaskCreate(led_control_task, "led_control", 2048, NULL, 1, &led_task_handle);
-        ESP_LOGI(TAG, "💙 Tarea de control LED iniciada");
+        ESP_LOGI(TAG, "Tarea de control LED iniciada");
     }
 }
 
@@ -148,7 +148,7 @@ void led_set_state(led_state_t state) {
         "⚫ APAGADO", "🟢 NORMAL", "🟡 ADVERTENCIA", 
         "🔵 CALIBRACIÓN", "🔴 ERROR", "⚪ ENCENDIDO"
     };
-    ESP_LOGI(TAG, "💙 LED estado cambiado: %s", state_names[state]);
+    ESP_LOGI(TAG, "LED estado cambiado: %s", state_names[state]);
 }
 
 led_state_t led_get_state(void) {
@@ -160,7 +160,7 @@ void led_stop_task(void) {
         vTaskDelete(led_task_handle);
         led_task_handle = NULL;
         gpio_set_level(LED_STATUS_PIN, 0);
-        ESP_LOGI(TAG, "💙 Tarea de control LED detenida");
+        ESP_LOGI(TAG, "Tarea de control LED detenida");
     }
 }
 
@@ -175,14 +175,14 @@ esp_err_t calibration_save_to_nvs(const calibration_data_t *cal_data) {
     // Abrir NVS en modo escritura
     err = nvs_open(CALIBRATION_NVS_NAMESPACE, NVS_READWRITE, &nvs_handle);
     if (err != ESP_OK) {
-        ESP_LOGE(TAG, "❌ No se pudo abrir NVS para escritura: %s", esp_err_to_name(err));
+        ESP_LOGE(TAG, "No se pudo abrir NVS para escritura: %s", esp_err_to_name(err));
         return err;
     }
     
     // Guardar datos
     err = nvs_set_blob(nvs_handle, "cal_data", cal_data, sizeof(calibration_data_t));
     if (err != ESP_OK) {
-        ESP_LOGE(TAG, "❌ Error guardando calibración: %s", esp_err_to_name(err));
+        ESP_LOGE(TAG, "Error guardando calibración: %s", esp_err_to_name(err));
         nvs_close(nvs_handle);
         return err;
     }
@@ -192,9 +192,9 @@ esp_err_t calibration_save_to_nvs(const calibration_data_t *cal_data) {
     nvs_close(nvs_handle);
     
     if (err == ESP_OK) {
-        ESP_LOGI(TAG, "💾 Datos de calibración guardados en NVS");
+        ESP_LOGI(TAG, "Datos de calibración guardados en NVS");
     } else {
-        ESP_LOGE(TAG, "❌ Error confirmando escritura: %s", esp_err_to_name(err));
+        ESP_LOGE(TAG, "Error confirmando escritura: %s", esp_err_to_name(err));
     }
     
     return err;
@@ -220,20 +220,20 @@ esp_err_t calibration_load_from_nvs(calibration_data_t *cal_data) {
     if (err == ESP_OK) {
         // Validar datos
         if (cal_data->magic_number == CALIBRATION_MAGIC_NUMBER && cal_data->calibrated) {
-            ESP_LOGI(TAG, "✅ Datos de calibración cargados desde NVS");
-            ESP_LOGI(TAG, "   HX711 - Scale: %.6f, Offset: %ld", 
+            ESP_LOGI(TAG, "Datos de calibración cargados desde NVS");
+            ESP_LOGI(TAG, "HX711 - Scale: %.6f, Offset: %ld", 
                      cal_data->hx711_scale_factor, cal_data->hx711_offset);
-            ESP_LOGI(TAG, "   HC-SR04P - Factor: %.6f", cal_data->hcsr04p_cal_factor);
+            ESP_LOGI(TAG, "HC-SR04P - Factor: %.6f", cal_data->hcsr04p_cal_factor);
             return ESP_OK;
         } else {
-            ESP_LOGW(TAG, "⚠️  Datos de calibración corruptos en NVS");
+            ESP_LOGW(TAG, "Datos de calibración corruptos en NVS");
             return ESP_ERR_INVALID_CRC;
         }
     } else if (err == ESP_ERR_NVS_NOT_FOUND) {
-        ESP_LOGW(TAG, "⚠️  No se encontraron datos de calibración en NVS");
+        ESP_LOGW(TAG, "No se encontraron datos de calibración en NVS");
         return ESP_ERR_NOT_FOUND;
     } else {
-        ESP_LOGE(TAG, "❌ Error leyendo calibración de NVS: %s", esp_err_to_name(err));
+        ESP_LOGE(TAG, "Error leyendo calibración de NVS: %s", esp_err_to_name(err));
         return err;
     }
 }
@@ -247,28 +247,28 @@ esp_err_t calibration_clear_nvs(void) {
     if (err != ESP_OK) {
         // Si no se puede abrir, probablemente no existe datos previos
         if (err == ESP_ERR_NVS_NOT_FOUND) {
-            ESP_LOGI(TAG, "ℹ️ No existe namespace de calibración previo");
+            ESP_LOGI(TAG, "No existe namespace de calibración previo");
             return ESP_ERR_NVS_NOT_FOUND;
         }
-        ESP_LOGE(TAG, "❌ Error abriendo NVS para limpieza: %s", esp_err_to_name(err));
+        ESP_LOGE(TAG, "Error abriendo NVS para limpieza: %s", esp_err_to_name(err));
         return err;
     }
     
     // Borrar todo el namespace (más efectivo que solo la key)
     err = nvs_erase_all(nvs_handle);
     if (err == ESP_OK) {
-        ESP_LOGI(TAG, "🗑️ Namespace de calibración completamente limpiado");
+        ESP_LOGI(TAG, "Namespace de calibración completamente limpiado");
     } else if (err == ESP_ERR_NVS_NOT_FOUND) {
-        ESP_LOGI(TAG, "ℹ️ No había datos de calibración que limpiar");
+        ESP_LOGI(TAG, "No había datos de calibración que limpiar");
         err = ESP_OK; // No es un error real
     } else {
-        ESP_LOGE(TAG, "❌ Error borrando datos: %s", esp_err_to_name(err));
+        ESP_LOGE(TAG, "Error borrando datos: %s", esp_err_to_name(err));
     }
     
     // Confirmar cambios
     esp_err_t commit_err = nvs_commit(nvs_handle);
     if (commit_err != ESP_OK) {
-        ESP_LOGW(TAG, "⚠️ Error confirmando limpieza: %s", esp_err_to_name(commit_err));
+        ESP_LOGW(TAG, "Error confirmando limpieza: %s", esp_err_to_name(commit_err));
     }
     
     nvs_close(nvs_handle);
@@ -277,22 +277,22 @@ esp_err_t calibration_clear_nvs(void) {
 }
 
 esp_err_t calibration_erase_all_nvs_partition(void) {
-    ESP_LOGI(TAG, "🗑️ Borrando TODA la partición NVS para liberar máximo espacio...");
+    ESP_LOGI(TAG, "Borrando TODA la partición NVS para liberar máximo espacio...");
     
     // Borrar completamente toda la partición NVS
     esp_err_t err = nvs_flash_erase();
     if (err == ESP_OK) {
-        ESP_LOGI(TAG, "✅ Toda la partición NVS borrada");
+        ESP_LOGI(TAG, "Toda la partición NVS borrada");
         
         // Reinicializar NVS completamente
         err = nvs_flash_init();
         if (err == ESP_OK) {
-            ESP_LOGI(TAG, "✅ NVS reinicializado completamente");
+            ESP_LOGI(TAG, "NVS reinicializado completamente");
         } else {
-            ESP_LOGE(TAG, "❌ Error reinicializando NVS: %s", esp_err_to_name(err));
+            ESP_LOGE(TAG, "Error reinicializando NVS: %s", esp_err_to_name(err));
         }
     } else {
-        ESP_LOGE(TAG, "❌ Error borrando partición NVS: %s", esp_err_to_name(err));
+        ESP_LOGE(TAG, "Error borrando partición NVS: %s", esp_err_to_name(err));
     }
     
     return err;
@@ -307,30 +307,30 @@ bool calibration_check_and_warn(void) {
         if (cal_data.hx711_scale_factor == 0.0f || 
             cal_data.hcsr04p_cal_factor == 0.0f) {
             
-            ESP_LOGW(TAG, "⚠️ ========================================");
-            ESP_LOGW(TAG, "⚠️  ADVERTENCIA: CALIBRACIÓN INVÁLIDA");
-            ESP_LOGW(TAG, "⚠️ ========================================");
-            ESP_LOGW(TAG, "⚠️  Los datos de calibración contienen valores cero");
-            ESP_LOGW(TAG, "⚠️  Para obtener mediciones precisas:");
-            ESP_LOGW(TAG, "⚠️  1. Reinicia manteniendo BOOT presionado");
-            ESP_LOGW(TAG, "⚠️  2. Completa el proceso de calibración");
-            ESP_LOGW(TAG, "⚠️ ========================================");
+            ESP_LOGW(TAG, "========================================");
+            ESP_LOGW(TAG, "ADVERTENCIA: CALIBRACIÓN INVÁLIDA");
+            ESP_LOGW(TAG, "========================================");
+            ESP_LOGW(TAG, "Los datos de calibración contienen valores cero");
+            ESP_LOGW(TAG, "Para obtener mediciones precisas:");
+            ESP_LOGW(TAG, "1. Reinicia manteniendo BOOT presionado");
+            ESP_LOGW(TAG, "2. Completa el proceso de calibración");
+            ESP_LOGW(TAG, "========================================");
             return false;
         }
         
-        ESP_LOGI(TAG, "✅ Calibración válida encontrada");
+        ESP_LOGI(TAG, "Calibración válida encontrada");
         return true;
         
     } else {
-        ESP_LOGW(TAG, "⚠️ ========================================");
-        ESP_LOGW(TAG, "⚠️  ADVERTENCIA: SIN CALIBRACIÓN");
-        ESP_LOGW(TAG, "⚠️ ========================================");
-        ESP_LOGW(TAG, "⚠️  No se encontraron datos de calibración");
-        ESP_LOGW(TAG, "⚠️  Los sensores usarán valores por defecto");
-        ESP_LOGW(TAG, "⚠️  Para calibrar correctamente:");
-        ESP_LOGW(TAG, "⚠️  1. Reinicia manteniendo BOOT presionado");
-        ESP_LOGW(TAG, "⚠️  2. Sigue las instrucciones de calibración");
-        ESP_LOGW(TAG, "⚠️ ========================================");
+        ESP_LOGW(TAG, "========================================");
+        ESP_LOGW(TAG, "ADVERTENCIA: SIN CALIBRACIÓN");
+        ESP_LOGW(TAG, "========================================");
+        ESP_LOGW(TAG, "No se encontraron datos de calibración");
+        ESP_LOGW(TAG, "Los sensores usarán valores por defecto");
+        ESP_LOGW(TAG, "Para calibrar correctamente:");
+        ESP_LOGW(TAG, "1. Reinicia manteniendo BOOT presionado");
+        ESP_LOGW(TAG, "2. Sigue las instrucciones de calibración");
+        ESP_LOGW(TAG, "========================================");
         return false;
     }
 }
@@ -343,7 +343,7 @@ esp_err_t calibration_apply_to_sensors(nivometro_t *nivometro, const calibration
     // Aplicar calibración HC-SR04P
     hcsr04p_set_calibration(&nivometro->ultrasonic, cal_data->hcsr04p_cal_factor);
     
-    ESP_LOGI(TAG, "🔧 Calibraciones aplicadas a los sensores");
+    ESP_LOGI(TAG, "Calibraciones aplicadas a los sensores");
     return ESP_OK;
 }
 
@@ -362,12 +362,12 @@ void boot_button_init(void) {
     };
     gpio_config(&boot_btn_config);
     
-    ESP_LOGI(TAG, "🔘 Botón BOOT inicializado en GPIO %d", BOOT_BUTTON_PIN);
+    ESP_LOGI(TAG, "Botón BOOT inicializado en GPIO %d", BOOT_BUTTON_PIN);
 }
 
 bool boot_button_check_calibration_mode(void) {
-    ESP_LOGI(TAG, "🔍 Verificando modo calibración...");
-    ESP_LOGI(TAG, "💡 INSTRUCCIONES: Mantén presionado el botón BOOT para calibrar");
+    ESP_LOGI(TAG, "Verificando modo calibración...");
+    ESP_LOGI(TAG, "INSTRUCCIONES: Mantén presionado el botón BOOT para calibrar");
     
     uint32_t pressed_time = 0;
     const uint32_t check_interval = 100; // Verificar cada 100ms
@@ -377,16 +377,16 @@ bool boot_button_check_calibration_mode(void) {
     for (int i = 0; i < 50; i++) {  // 50 * 100ms = 5 segundos
         if (gpio_get_level(BOOT_BUTTON_PIN) == 0) {  // Botón presionado (activo bajo)
             pressed_time += check_interval;
-            ESP_LOGI(TAG, "🔘 Botón BOOT presionado - Tiempo: %lu ms / %lu ms", 
+            ESP_LOGI(TAG, "Botón BOOT presionado - Tiempo: %lu ms / %lu ms", 
                     pressed_time, required_time);
             
             if (pressed_time >= required_time) {
-                ESP_LOGI(TAG, "✅ Modo calibración activado!");
+                ESP_LOGI(TAG, "Modo calibración activado!");
                 return true;
             }
         } else {
             if (pressed_time > 0) {
-                ESP_LOGI(TAG, "🔘 Botón liberado - Tiempo insuficiente: %lu ms", pressed_time);
+                ESP_LOGI(TAG, "Botón liberado - Tiempo insuficiente: %lu ms", pressed_time);
             }
             pressed_time = 0;
         }
@@ -394,12 +394,12 @@ bool boot_button_check_calibration_mode(void) {
         vTaskDelay(pdMS_TO_TICKS(check_interval));
     }
     
-    ESP_LOGI(TAG, "➡️  Continuando con arranque normal");
+    ESP_LOGI(TAG, "Continuando con arranque normal");
     return false;
 }
 
 void boot_button_wait_for_press(void) {
-    ESP_LOGI(TAG, "⏳ Esperando confirmación (presiona BOOT)...");
+    ESP_LOGI(TAG, "Esperando confirmación (presiona BOOT)...");
     
     // Esperar a que el botón se libere (si está presionado)
     while (gpio_get_level(BOOT_BUTTON_PIN) == 0) {
@@ -419,7 +419,7 @@ void boot_button_wait_for_press(void) {
         vTaskDelay(pdMS_TO_TICKS(100));
     }
     
-    ESP_LOGI(TAG, "✅ Confirmación recibida");
+    ESP_LOGI(TAG, "Confirmación recibida");
 }
 
 // ==============================================================================

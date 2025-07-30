@@ -38,12 +38,12 @@ static void sensor_task(void* _) {
     nivometro_data_t nivometro_data;
     uint32_t measurement_count = 0;
     
-    ESP_LOGI(TAG, "📊 Tarea de sensores iniciada con gestión inteligente de energía");
+    ESP_LOGI(TAG, "Tarea de sensores iniciada con gestión inteligente de energía");
     
     for (;;) {
         measurement_count++;
         
-        // ⚡ DETECTAR FUENTE DE ALIMENTACIÓN ANTES DE CADA CICLO ⚡
+        // DETECTAR FUENTE DE ALIMENTACIÓN ANTES DE CADA CICLO ⚡
         power_source_t power_source = power_manager_get_source();
         uint32_t delay_ms;
         const char* mode_str;
@@ -54,23 +54,23 @@ static void sensor_task(void* _) {
             delay_ms = SENSOR_PERIOD_USB_MS;  // 5000 ms
             mode_str = "USB-FRECUENTE";
             
-            ESP_LOGI(TAG, "🔌 [%s] Medición #%lu - Intervalo: %lu ms (5 segundos)", 
+            ESP_LOGI(TAG, "[%s] Medición #%lu - Intervalo: %lu ms (5 segundos)", 
                     mode_str, measurement_count, delay_ms);
             
         } else if (power_source == POWER_SOURCE_BATTERY) {
-            // 🔋 MODO BATERÍA: Mediciones espaciadas cada 60 segundos
+            // MODO BATERÍA: Mediciones espaciadas cada 60 segundos
             delay_ms = SENSOR_PERIOD_BATTERY_MS;  // 60000 ms
             mode_str = "BATERÍA-ESPACIADO";
             
-            ESP_LOGI(TAG, "🔋 [%s] Medición #%lu - Intervalo: %lu ms (60 segundos + sleep)", 
+            ESP_LOGI(TAG, "[%s] Medición #%lu - Intervalo: %lu ms (60 segundos + sleep)", 
                     mode_str, measurement_count, delay_ms);
             
         } else {
-            // ❓ MODO DESCONOCIDO: Usar configuración intermedia
+            // MODO DESCONOCIDO: Usar configuración intermedia
             delay_ms = SENSOR_PERIOD_DEFAULT_MS;  // 30000 ms
             mode_str = "DESCONOCIDO";
             
-            ESP_LOGW(TAG, "❓ [%s] Medición #%lu - Intervalo: %lu ms (modo intermedio)", 
+            ESP_LOGW(TAG, "[%s] Medición #%lu - Intervalo: %lu ms (modo intermedio)", 
                     mode_str, measurement_count, delay_ms);
         }
         
@@ -83,18 +83,18 @@ static void sensor_task(void* _) {
             
             // Enviar datos a la cola para procesamiento
             if (xQueueSend(data_queue, &d, 0) != pdTRUE) {
-                ESP_LOGW(TAG, "⚠️  [%s] Cola llena, descartando muestra", mode_str);
+                ESP_LOGW(TAG, "[%s] Cola llena, descartando muestra", mode_str);
             } else {
                 // VL53L0X eliminado del log - solo HC-SR04P y HX711
-                ESP_LOGI(TAG, "✅ [%s] Datos enviados: %.2f cm, %.2f kg", 
+                ESP_LOGI(TAG, "[%s] Datos enviados: %.2f cm, %.2f kg", 
                         mode_str, d.distance_cm, d.weight_kg);
             }
         } else {
-            ESP_LOGE(TAG, "❌ Error leyendo sensores: %s", esp_err_to_name(result));
+            ESP_LOGE(TAG, "Error leyendo sensores: %s", esp_err_to_name(result));
         }
         
         // === LOGGING DE CONFIRMACIÓN DEL INTERVALO ===
-        ESP_LOGI(TAG, "⏰ [%s] Esperando %lu ms antes de la siguiente medición", mode_str, delay_ms);
+        ESP_LOGI(TAG, "[%s] Esperando %lu ms antes de la siguiente medición", mode_str, delay_ms);
         
         // === ESPERAR EL TIEMPO DETERMINADO ===
         vTaskDelay(pdMS_TO_TICKS(delay_ms));
@@ -108,68 +108,68 @@ static void publish_task(void* _) {
     sensor_data_t d;
     uint32_t publish_count = 0;
 
-    ESP_LOGI(TAG, "📡 Tarea de publicación iniciada con gestión inteligente de energía");
+    ESP_LOGI(TAG, "Tarea de publicación iniciada con gestión inteligente de energía");
 
     for (;;) {
         // Bloquea hasta recibir un dato de sensor
         if (xQueueReceive(data_queue, &d, portMAX_DELAY) == pdTRUE) {
             publish_count++;
             
-            // ⚡ DETECTAR FUENTE DE ALIMENTACIÓN ⚡
+            // DETECTAR FUENTE DE ALIMENTACIÓN 
             power_source_t power_source = power_manager_get_source();
             
             // === ALMACENAMIENTO LOCAL (SIEMPRE) ===
             storage_buffer_data(&d);
-            ESP_LOGI(TAG, "💾 [Pub #%lu] Datos guardados localmente", publish_count);
+            ESP_LOGI(TAG, "[Pub #%lu] Datos guardados localmente", publish_count);
             
             if (power_source == POWER_SOURCE_USB) {
                 // ═══════════════════════════════════════
-                // 🔌 MODO USB: COMUNICACIÓN COMPLETA
+                // MODO USB: COMUNICACIÓN COMPLETA
                 // ═══════════════════════════════════════
                 
-                ESP_LOGI(TAG, "🔌 [USB-ACTIVO] Publicación #%lu - Modo continuo", publish_count);
+                ESP_LOGI(TAG, "[USB-Conectado] Publicación #%lu - Modo nominal", publish_count);
                 
                 // Asegurar conexión WiFi + MQTT
                 communication_wait_for_connection();
                 
                 // Enviar datos al broker
                 communication_publish(&d);
-                ESP_LOGI(TAG, "✅ [USB-ACTIVO] Datos enviados vía MQTT");
+                ESP_LOGI(TAG, "[USB-Conectado] Datos enviados vía MQTT");
                 
                 // Pausa breve y continuar (NO deep sleep)
                 vTaskDelay(pdMS_TO_TICKS(500));
-                ESP_LOGI(TAG, "🔌 [USB-ACTIVO] Continuando en modo activo - SIN sleep");
+                ESP_LOGI(TAG, "[USB-Conectado] Continuando en modo nominal");
                 
             } else if (power_source == POWER_SOURCE_BATTERY) {
                 // ═══════════════════════════════════════
-                // 🔋 MODO BATERÍA: AHORRO MÁXIMO
+                // MODO BATERÍA: AHORRO MÁXIMO
                 // ═══════════════════════════════════════
                 
-                ESP_LOGI(TAG, "🔋 [BATERÍA-AHORRO] Publicación #%lu - Modo ahorro", publish_count);
+                ESP_LOGI(TAG, "[Batería] Publicación #%lu - Modo Batería", publish_count);
                 
                 // Intentar envío rápido si hay conexión
                 // TEMPORAL: Comentado hasta verificar función
                 // if (communication_is_connected()) {
-                //     ESP_LOGI(TAG, "📡 Conexión disponible - envío rápido");
+                //     ESP_LOGI(TAG, "Conexión disponible - envío rápido");
                 //     communication_publish(&d);
-                //     ESP_LOGI(TAG, "✅ [BATERÍA-AHORRO] Datos enviados");
+                //     ESP_LOGI(TAG, "[BATERÍA-AHORRO] Datos enviados");
                 // } else {
-                //     ESP_LOGI(TAG, "📶 Sin conexión - datos solo locales");
+                //     ESP_LOGI(TAG, "Sin conexión - datos solo locales");
                 // }
                 
                 // SIMPLIFICADO: Enviar directamente
-                ESP_LOGI(TAG, "📡 [BATERÍA-AHORRO] Enviando datos...");
+                ESP_LOGI(TAG, "[Batería] Enviando datos...");
                 communication_publish(&d);
-                ESP_LOGI(TAG, "✅ [BATERÍA-AHORRO] Datos enviados");
+                ESP_LOGI(TAG, "[Batería] Datos enviados");
                 
                 // Verificar si debe entrar en deep sleep
                 if (power_manager_should_sleep()) {
-                    ESP_LOGI(TAG, "💤 [BATERÍA-AHORRO] Condiciones para sleep cumplidas");
+                    ESP_LOGI(TAG, "[Batería] Condiciones para modo batería cumplidas");
                     
-                    ESP_LOGI(TAG, "😴 [BATERÍA-AHORRO] Entrando en deep sleep...");
+                    ESP_LOGI(TAG, "[Batería] Entrando en deep_sleep...");
                     power_manager_enter_deep_sleep();
                     
-                    // ⚠️ EL SISTEMA SE REINICIA AQUÍ ⚠️
+                    // EL SISTEMA SE REINICIA AQUÍ 
                 }
                 
                 // Si no entra en sleep, pausa breve
@@ -177,21 +177,21 @@ static void publish_task(void* _) {
                 
             } else {
                 // ═══════════════════════════════════════
-                // ❓ MODO DESCONOCIDO: COMPORTAMIENTO CONSERVATIVO
+                // MODO DESCONOCIDO: COMPORTAMIENTO CONSERVATIVO
                 // ═══════════════════════════════════════
                 
-                ESP_LOGW(TAG, "❓ [DESCONOCIDO] Publicación #%lu - modo conservativo", publish_count);
+                ESP_LOGW(TAG, "[DESCONOCIDO] Publicación #%lu - modo conservativo", publish_count);
                 
                 // Comportamiento conservativo: intentar envío
                 // TEMPORAL: Comentado hasta verificar función
                 // if (communication_is_connected()) {
                 //     communication_publish(&d);
-                //     ESP_LOGI(TAG, "✅ [DESCONOCIDO] Datos enviados (modo conservativo)");
+                //     ESP_LOGI(TAG, "[DESCONOCIDO] Datos enviados (modo conservativo)");
                 // }
                 
                 // SIMPLIFICADO: Enviar directamente
                 communication_publish(&d);
-                ESP_LOGI(TAG, "✅ [DESCONOCIDO] Datos enviados (modo conservativo)");
+                ESP_LOGI(TAG, "[DESCONOCIDO] Datos enviados (modo conservativo)");
                 
                 vTaskDelay(pdMS_TO_TICKS(1000));
             }
@@ -200,19 +200,19 @@ static void publish_task(void* _) {
 }
 
 void tasks_start_all(void) {
-    ESP_LOGI(TAG, "🚀 Iniciando todas las tareas con gestión inteligente de energía - VERSIÓN SIN VL53L0X");
-    ESP_LOGI(TAG, "⚡ Intervalos configurados:");
-    ESP_LOGI(TAG, "   🔌 USB: %d ms (%d segundos)", SENSOR_PERIOD_USB_MS, SENSOR_PERIOD_USB_MS/1000);
-    ESP_LOGI(TAG, "   🔋 BATERÍA: %d ms (%d segundos)", SENSOR_PERIOD_BATTERY_MS, SENSOR_PERIOD_BATTERY_MS/1000);
-    ESP_LOGI(TAG, "   ❓ DEFAULT: %d ms (%d segundos)", SENSOR_PERIOD_DEFAULT_MS, SENSOR_PERIOD_DEFAULT_MS/1000);
+    ESP_LOGI(TAG, "Iniciando todas las tareas con gestión inteligente de energía");
+    ESP_LOGI(TAG, "Intervalos configurados:");
+    ESP_LOGI(TAG, "Nominal: %d ms (%d segundos)", SENSOR_PERIOD_USB_MS, SENSOR_PERIOD_USB_MS/1000);
+    ESP_LOGI(TAG, "Batería: %d ms (%d segundos)", SENSOR_PERIOD_BATTERY_MS, SENSOR_PERIOD_BATTERY_MS/1000);
+    ESP_LOGI(TAG, "Default: %d ms (%d segundos)", SENSOR_PERIOD_DEFAULT_MS, SENSOR_PERIOD_DEFAULT_MS/1000);
     
     // Crear la cola con capacidad para 10 muestras de sensor_data_t
     data_queue = xQueueCreate(10, sizeof(sensor_data_t));
     if (!data_queue) {
-        ESP_LOGE(TAG, "❌ Error: No se pudo crear la cola de datos");
+        ESP_LOGE(TAG, "Error: No se pudo crear la cola de datos");
         return;
     }
-    ESP_LOGI(TAG, "✅ Cola de datos creada (capacidad: 10 muestras)");
+    ESP_LOGI(TAG, "Cola de datos creada (capacidad: 10 muestras)");
 
     // Lanzar la tarea de lectura de sensores con stack aumentado
     BaseType_t sensor_result = xTaskCreate(
@@ -225,9 +225,9 @@ void tasks_start_all(void) {
     );
     
     if (sensor_result == pdPASS) {
-        ESP_LOGI(TAG, "✅ Tarea de sensores creada con stack de %d bytes", SENSOR_TASK_STACK);
+        ESP_LOGI(TAG, "Tarea de sensores creada con stack de %d bytes", SENSOR_TASK_STACK);
     } else {
-        ESP_LOGE(TAG, "❌ Error creando tarea de sensores");
+        ESP_LOGE(TAG, "Error creando tarea de sensores");
         return;
     }
 
@@ -242,14 +242,14 @@ void tasks_start_all(void) {
     );
     
     if (publish_result == pdPASS) {
-        ESP_LOGI(TAG, "✅ Tarea de publicación creada exitosamente");
+        ESP_LOGI(TAG, "Tarea de publicación creada exitosamente");
     } else {
-        ESP_LOGE(TAG, "❌ Error creando tarea de publicación");
+        ESP_LOGE(TAG, "Error creando tarea de publicación");
         return;
     }
 
-    ESP_LOGI(TAG, "🎉 Todas las tareas iniciadas correctamente");
-    ESP_LOGI(TAG, "⚡ Gestión automática de energía activa:");
-    ESP_LOGI(TAG, "   🔌 USB conectado → Mediciones cada 5 segundos, sin sleep");
-    ESP_LOGI(TAG, "   🔋 Solo batería → Mediciones cada 60 segundos + deep sleep");
+    ESP_LOGI(TAG, "Todas las tareas iniciadas correctamente");
+    ESP_LOGI(TAG, "Gestión automática de energía activa:");
+    ESP_LOGI(TAG, "USB conectado → Mediciones cada 5 segundos, modo nominal");
+    ESP_LOGI(TAG, "Solo batería → Mediciones cada 60 segundos + modo batería");
 }

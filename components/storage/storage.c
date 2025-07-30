@@ -26,9 +26,9 @@ void storage_buffer_data(const sensor_data_t* d) {
     // Almacena el struct completo en nvs
     esp_err_t err = nvs_set_blob(nvs_handle_local, key, d, sizeof(sensor_data_t));
     if (err != ESP_OK) {
-        ESP_LOGE(TAG, "Error writtng to NVS: %s", esp_err_to_name(err));
+        ESP_LOGE(TAG, "Error al escribir en NVS: %s", esp_err_to_name(err));
     } else {
-        ESP_LOGI(TAG, "Register saved %s", key);
+        ESP_LOGI(TAG, "Registro guardado en %s", key);
         nvs_commit(nvs_handle_local);                  // Confirma la escritura en memoria
     }
 }

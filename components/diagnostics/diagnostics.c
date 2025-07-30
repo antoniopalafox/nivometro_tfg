@@ -17,16 +17,16 @@ void diagnostics_init(void)
         err = nvs_flash_init();
     }
     if (err != ESP_OK) {
-        ESP_LOGE(TAG, "nvs_flash_init failed: %s", esp_err_to_name(err));
+        ESP_LOGE(TAG, "nvs_flash_init falló: %s", esp_err_to_name(err));
         return;
     }
 
      // Abre (o crea) el namespace diag en nvs para guardar errores/eventos
     err = nvs_open("diag", NVS_READWRITE, &diag_nvs_handle);
     if (err != ESP_OK) {
-        ESP_LOGE(TAG, "nvs_open diag failed: %s", esp_err_to_name(err));
+        ESP_LOGE(TAG, "nvs_open diag falló: %s", esp_err_to_name(err));
     } else {
-        ESP_LOGI(TAG, "Diagnostics initialized");
+        ESP_LOGI(TAG, "Diagnostics inicializados");
     }
 }
 
@@ -47,7 +47,7 @@ void diagnostics_log_error(const char *subsystem, esp_err_t err, const char *msg
 void diagnostics_record_event(const char *event_name, const char *details)
 {
     // Registra el evento en consola y, si nvs está abierto, lo guarda incrementando el límite
-    ESP_LOGI(TAG, "Event %s: %s", event_name, details ? details : "");
+    ESP_LOGI(TAG, "Evento %s: %s", event_name, details ? details : "");
 
     if (diag_nvs_handle) {
         uint32_t idx = 0;

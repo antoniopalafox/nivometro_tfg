@@ -16,7 +16,7 @@ void config_init(void) {
         nvs_flash_init();
     }
     
-    ESP_LOGI(TAG, "config_init() called, no CONFIG_* values available");
+    ESP_LOGI(TAG, "llamada a config_init(): no hay valores CONFIG_* disponibles");
 }
 
 
