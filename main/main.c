@@ -180,7 +180,7 @@ void app_main(void) {
 
     // 3) Mensajes de arranque del nivómetro
     ESP_LOGI(TAG, "Iniciando TFG Nivómetro Antártida");
-    ESP_LOGI(TAG, "Modo de alimentación: %s");
+    ESP_LOGI(TAG, "Modo de alimentación");
     ESP_LOGI(TAG, "USB conectado = Modo Nominal | Solo Batería = Deep Sleep");
 
     // 4) Inicialización explícita de NVS

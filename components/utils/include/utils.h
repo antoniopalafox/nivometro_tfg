@@ -16,6 +16,11 @@ int data_formatter_format_json(const sensor_data_t *data, char *buf, size_t bufs
 
 #define LED_STATUS_PIN          GPIO_NUM_16  // LED externo 
 
+// Definiciones fijas para NVS
+#define CALIBRATION_NVS_NAMESPACE   "calibration" // Namespace para datos de calibración
+#define CALIBRATION_MAGIC_NUMBER    0xCAFEBABE 
+
+
 // Estados del LED (6 estados diferenciados)
 typedef enum {
     LED_STATE_OFF,              // ⚫ Sistema apagado
@@ -58,7 +63,7 @@ typedef struct {
 // Funciones de gestión NVS para calibración
 esp_err_t calibration_save_to_nvs(const calibration_data_t *cal_data);
 esp_err_t calibration_load_from_nvs(calibration_data_t *cal_data);
-esp_err_t calibration__all_nvs_partition(void);
+esp_err_t calibration_all_nvs_partition(void);
 bool calibration_check_and_warn(void);
 esp_err_t calibration_apply_to_sensors(nivometro_t *nivometro, const calibration_data_t *cal_data);
 

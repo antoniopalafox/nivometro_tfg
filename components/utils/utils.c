@@ -146,10 +146,6 @@ void led_stop_task(void) {
     }
 }
 
-// Definiciones fijas para NVS
-#define CALIBRATION_NVS_NAMESPACE   "calibration" // Namespace para datos de calibración
-#define CALIBRATION_MAGIC_NUMBER    0xCAFEBABE 
-
 esp_err_t calibration_save_to_nvs(const calibration_data_t *cal_data) {
     nvs_handle_t nvs_handle;
     esp_err_t err;
