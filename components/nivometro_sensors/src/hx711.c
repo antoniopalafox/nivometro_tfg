@@ -1,6 +1,7 @@
-// tfg/components/hx711/hx711.c 
+// File: components//nivometro_sensors/src/hx711.c 
+
 #include "hx711.h"
-#include "esp_rom_sys.h"  // Para esp_rom_delay_us en ESP-IDF v5.x
+#include "esp_rom_sys.h"  
 
 static const char *TAG = "HX711";
 

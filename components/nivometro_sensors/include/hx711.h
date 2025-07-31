@@ -1,4 +1,5 @@
-// tfg/components/hx711/include/hx711.h (VERSIÓN ACTUALIZADA)
+// File: components/nivometro_sensors/include/hx711.h
+
 #ifndef HX711_H
 #define HX711_H
 
@@ -15,7 +16,7 @@
 extern "C" {
 #endif
 
-// Definiciones de ganancia corregidas
+// Definiciones de ganancia
 typedef enum {
     HX711_GAIN_128 = 1,  // Canal A, ganancia 128 (1 pulso extra)
     HX711_GAIN_32  = 2,  // Canal B, ganancia 32 (2 pulsos extra)
@@ -29,7 +30,7 @@ typedef struct {
     hx711_gain_t gain;
 } hx711_config_t;
 
-// Estructura del dispositivo HX711 (NUEVA VERSIÓN MEJORADA)
+// Estructura del dispositivo HX711
 typedef struct {
     gpio_num_t dout_pin;
     gpio_num_t sck_pin;
@@ -41,7 +42,6 @@ typedef struct {
     int reading_index;
 } hx711_t;
 
-// COMPATIBILIDAD: Alias para la estructura antigua
 typedef hx711_t hx711_sensor_t;
 
 // Constantes
@@ -64,8 +64,6 @@ esp_err_t hx711_calibrate(hx711_t *dev, float known_weight, int samples);
 esp_err_t hx711_read_units(hx711_t *dev, float *units);
 esp_err_t hx711_read_units_average(hx711_t *dev, float *units, int samples);
 void hx711_debug_info(hx711_t *dev);
-
-// FUNCIONES DE COMPATIBILIDAD para la API antigua
 static inline bool hx711_init_old_api(hx711_sensor_t *sensor, int dout_pin, int sck_pin, hx711_gain_t gain) {
     hx711_config_t config = {
         .dout_pin = (gpio_num_t)dout_pin,
@@ -74,7 +72,6 @@ static inline bool hx711_init_old_api(hx711_sensor_t *sensor, int dout_pin, int 
     };
     return (hx711_init(sensor, &config) == ESP_OK);
 }
-
 static inline int32_t hx711_read_raw_old_api(hx711_sensor_t *sensor) {
     int32_t raw_value;
     if (hx711_read_raw(sensor, &raw_value) == ESP_OK) {
@@ -82,7 +79,6 @@ static inline int32_t hx711_read_raw_old_api(hx711_sensor_t *sensor) {
     }
     return 0;
 }
-
 static inline float hx711_read_units_old_api(hx711_sensor_t *sensor) {
     float units;
     if (hx711_read_units(sensor, &units) == ESP_OK) {
@@ -90,29 +86,22 @@ static inline float hx711_read_units_old_api(hx711_sensor_t *sensor) {
     }
     return 0.0f;
 }
-
 static inline void hx711_calibrate_old_api(hx711_sensor_t *sensor, float known_weight, int readings) {
     hx711_calibrate(sensor, known_weight, readings);
 }
-
 static inline void hx711_tare_old_api(hx711_sensor_t *sensor, int readings) {
     hx711_tare(sensor, readings);
 }
-
 static inline void hx711_set_gain_old_api(hx711_sensor_t *sensor, hx711_gain_t gain) {
     hx711_set_gain(sensor, gain);
 }
-
 static inline void hx711_power_down_old_api(hx711_sensor_t *sensor) {
     hx711_power_down(sensor);
 }
-
 static inline void hx711_power_up_old_api(hx711_sensor_t *sensor) {
     hx711_power_up(sensor);
 }
-
 #ifdef __cplusplus
 }
 #endif
-
-#endif // HX711_H
+#endif 

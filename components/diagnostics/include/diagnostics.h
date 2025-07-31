@@ -1,3 +1,5 @@
+//File: components/diagnotics/include/diagnotics.h
+
 #pragma once                   // Le indica al compilador que procese este fichero solo una vez por compilacion
 
 #include "esp_err.h"

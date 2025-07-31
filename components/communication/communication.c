@@ -30,8 +30,8 @@ static const char* MQTT_TOPIC_WEIGHT     = "sensors/weight";
 // Prototipos de funciones internas
 static void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data);
 static void mqtt_event_handler(void* handler_args, esp_event_base_t base, int32_t event_id, void* event_data);
-static void init_sntp_and_wait(void);                    // Arranca sntp y espera a sincronizar hora
-static void get_iso8601_utc(char *out, size_t out_size); // Rellena out con timestamp utc en formato iso8601
+static void init_sntp_and_wait(void);                       // Arranca sntp y espera a sincronizar hora
+static void get_iso8601_utc(char *out, size_t out_size);    // Rellena out con timestamp utc en formato iso8601
 
 void communication_init(void) {
     // Crea el grupo de eventos para coordinar wifi y mqtt
@@ -61,7 +61,7 @@ void communication_init(void) {
         }
     };
 
-    // Copiar ssid y password desde sdkconfig
+    // Copiar ssid y password del wifi desde sdkconfig
     strncpy((char*)wifi_cfg.sta.ssid, CONFIG_WIFI_SSID, sizeof(wifi_cfg.sta.ssid));
     strncpy((char*)wifi_cfg.sta.password, CONFIG_WIFI_PASSWORD, sizeof(wifi_cfg.sta.password));
 
@@ -79,11 +79,10 @@ void communication_init(void) {
     // 8) Configurar y arrancar cliente MQTT usando URI de sdkconfig
     esp_mqtt_client_config_t mqtt_cfg = {
           .broker.address.uri = "mqtt://broker.hivemq.com:1883"
-
     };
+
     mqtt_client = esp_mqtt_client_init(&mqtt_cfg);
-    ESP_ERROR_CHECK(esp_mqtt_client_register_event(
-        mqtt_client, ESP_EVENT_ANY_ID, mqtt_event_handler, NULL));
+    ESP_ERROR_CHECK(esp_mqtt_client_register_event(mqtt_client, ESP_EVENT_ANY_ID, mqtt_event_handler, NULL));
     esp_mqtt_client_start(mqtt_client);
     mqtt_started = true;
 }

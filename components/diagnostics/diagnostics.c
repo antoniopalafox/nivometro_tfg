@@ -1,3 +1,5 @@
+//File: components/diagnotics/diagnotics.c
+
 #include "diagnostics.h"
 #include "nvs_flash.h"
 #include "nvs.h"

@@ -1,3 +1,5 @@
+//File: components/config/config.c
+
 #include "config.h"
 #include "esp_log.h"
 #include "nvs_flash.h"
