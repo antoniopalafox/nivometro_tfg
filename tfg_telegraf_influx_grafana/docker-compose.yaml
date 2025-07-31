@@ -1,3 +1,4 @@
+#File: tfg_telegraf_influx_grafana/docker-compose.yaml
 version: '3'  # Versión del formato de docker-compose
 
 services:
@@ -20,6 +21,7 @@ services:
   telegraf:
     image: telegraf:latest                         # Imagen de Telegraf para recopilar métricas MQTT
     container_name: telegraf                       # Nombre del contenedor
+    hostname: nivometro-sensor          
     depends_on:
       - influxdb                                   # Espera a que InfluxDB esté listo antes de arrancar
     volumes:
