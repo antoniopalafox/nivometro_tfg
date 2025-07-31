@@ -198,7 +198,7 @@ Abre .env en tu editor y completa con tus datos:
          - **Token**: el token creado y almacenado en .env
 
 
-**2. Verificar conexión:**
+2. **Verificar conexión:**
 
    Hacer clic en **Save & Test**
       Si todo funciona correctamente, seleccionar **Building a dashboard**
