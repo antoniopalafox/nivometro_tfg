@@ -1,10 +1,10 @@
 # Nivómetro para monitor de neutrones Estación Antártica Juan Carlos I
 
-
 Trabajo Fin de Grado en Ingeniería Telemática · Universidad de Alcalá
 **Tutor**: Óscar García Población
 **Alumnos**: Antonio Mata Marco y Antonio Palafox Moya 
 
+---
 
 ##  Tabla de Contenidos
 
@@ -18,6 +18,7 @@ Trabajo Fin de Grado en Ingeniería Telemática · Universidad de Alcalá
 - [Configurar InfluxDB](#configurar-influxdb)
 - [Configurar Grafana](#configurar-grafana)
 
+---
 
 ## Descripción
 
@@ -71,34 +72,36 @@ Gracias a la **gestión de la alimentación**, el dispositivo puede funcionar **
    ```bash
    git clone https://github.com/antoniopalafox/nivometro_tfg.git
    cd nivometro_tfg
+   ```
 
 2. **Configuración Menuconfig**  
    Para ejecutar este paso puedes recibir mas informacion aqui: [Menuconfig](#menuconfig)
    
    ```bash
    idf.py menuconfig
+   ```
 
 3. **Compilación**
 
     ```bash
     idf.py build
-
+    ```
 4. **Configurar variables de entorno .env**  
    Si necesitas informacion sobre este punto pulsa aquí: [Variables de entorno .env](#variables-de-entorno-env)
 
     ```bash
     cd tfg_telegraf_influx_grafana
     cp .env.example .env
+    ```
 
 
 5. **Desplegar monitorización**  
     ```bash
     cd tfg_telegraf_influx_grafana
     docker-compose up -d
+    xdg-open "http://localhost:3000" #Grafana
+    xdg-open "http://localhost:8086" #InfluxDB
     ```
-
-    "http://localhost:3000" #Grafana
-    "http://localhost:8086" #InfluxDB
    Clicando estos enlaces puedes configurar tus menus de [InfluxDB](#configurar-influxdb) y [Grafana](#configurar-grafana).
 
 6. **Ejecutar ESP32**
@@ -106,33 +109,41 @@ Gracias a la **gestión de la alimentación**, el dispositivo puede funcionar **
    cd ..
    idf.py flash monitor
    ```
-   A partir de aquí siga las instruciones que le indican por la linea de comandos
+   A partir de aquí siga las instruciones que le indican por la linea de comandos.
    Para salir de la consola Crtl+T y seguido Ctrl+X.
+
+---
    
 ## Menuconfig
 
-Q: Guardar y salir   Esc: Retroceder   Enter: Confirmar  ?: Para obtener informacion del prompt
+**Q**: Guardar y salir   **S**: Guardar  **Esc**: Retroceder   **Enter**: Confirmar  **?**: Para obtener informacion del prompt
 
    Serial Flasher Config → Flash Size: 4 MB
    
-   Calibración del Nivómetro:
+   **Calibración del Nivómetro**:
    Configuración de los parametros de calibración de ambos sensores y del proceso de calibración.
 
-   Comunicación Nivómetro:
+   **Comunicación Nivómetro**:
    Rellenar WiFi SSID y WiFi Password con las credenciales deseadas.
+
+---
 
 ## Estados del LED
 
 Es proyecto tiene un programado un LED rojo externo el cual va a indiar en que estado se encuentra el sistema.
-🟢 NORMAL: Parpadeo cada 2 segundos (muy lento)
-🟡 WARNING: Parpadeo cada 0.8 segundos (medio)
-🔵 CALIBRATION: Parpadeo cada 0.2 segundos (rápido)
-🔴 ERROR: Parpadeo cada 0.075 segundos (muy rápido)
-⚪ PROCESO COMPLETO: encendido fijo
+🟢 **NORMAL**: Parpadeo cada 2 segundos (muy lento).
+🟡 **WARNING**: Parpadeo cada 0.8 segundos (medio).
+🔵 **CALIBRATION**: Parpadeo cada 0.2 segundos (rápido).
+🔴 **ERROR**: Parpadeo cada 0.075 segundos (muy rápido).
+⚪ **PROCESO COMPLETO**: encendido fijo.
+
+---
 
 ## Modo Calibración
 
 Para entrar en modo calibración debes mantén presionado **BOOT** durante los segundos que se configuren en el [menuconfig](#menuconfig) al arranque y seguir las instrucciones detalladas en el propio menuconfig pulsando la tecla ?.
+
+---
 
 ## Variables de entorno .env
 
@@ -143,6 +154,8 @@ Abre .env en tu editor y completa con tus datos:
    DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=<tu_token_influx>
    GF_ADMIN_USER=<tu_usuario_grafana>
    GF_ADMIN_PASSWORD=<tu_password_grafana>
+
+---
 
 ## Configurar InfluxDB
 
@@ -163,9 +176,6 @@ Abre .env en tu editor y completa con tus datos:
       - **host**: clicar en nivometro-sensor
       - **topic**: clicar en sensors/ultrasonic y sensors/weight
 
-
-
-
 4. **Guardar el dashboard:**
 
    Dar clic en **Submit** para ver los resultados en InfluxDB
@@ -178,7 +188,7 @@ Abre .env en tu editor y completa con tus datos:
    Ir a **Dashboards**, donde se verá la configuración creada en Data Explorer
       Guardar el dashboard con el nombre Nivometro
 
-
+---
 
 ## Configurar Grafana
 
@@ -197,18 +207,15 @@ Abre .env en tu editor y completa con tus datos:
          - **Organization:** my-tfg
          - **Token**: el token creado y almacenado en .env
 
-
 2. **Verificar conexión:**
 
    Hacer clic en **Save & Test**
       Si todo funciona correctamente, seleccionar **Building a dashboard**
 
-
 3. **Crear dashboard:**
 
    En la pantalla del dashboard, seleccionar **Create dashboard → Add visualization**
       Seleccionar el data source creado anteriormente (medidas_tfg)
-
 
 4. **Configurar queries:**
    **Query para sensors/ultrasonic** (nombrar como "Ultrasonic"):
@@ -241,3 +248,5 @@ Abre .env en tu editor y completa con tus datos:
 5. **Guardar dashboard:**
 
    Hacer clic en **Save dashboard** y asignar el nombre Nivometro
+
+---
