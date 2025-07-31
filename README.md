@@ -2,7 +2,7 @@
 
 
 Trabajo Fin de Grado en Ingeniería Telemática · Universidad de Alcalá
-**Profesor**: Óscar García Población
+**Tutor**: Óscar García Población
 **Alumnos**: Antonio Mata Marco y Antonio Palafox Moya 
 
 
@@ -95,15 +95,16 @@ Gracias a la **gestión de la alimentación**, el dispositivo puede funcionar **
     ```bash
     cd tfg_telegraf_influx_grafana
     docker-compose up -d
-    xdg-open "http://localhost:3000" #Grafana
-    xdg-open "http://localhost:8086" #InfluxDB
     ```
+
+    "http://localhost:3000" #Grafana
+    "http://localhost:8086" #InfluxDB
    Clicando estos enlaces puedes configurar tus menus de [InfluxDB](#configurar-influxdb) y [Grafana](#configurar-grafana).
 
 6. **Ejecutar ESP32**
    ```bash
    cd ..
-   idf.py flash monitor.
+   idf.py flash monitor
    ```
    A partir de aquí siga las instruciones que le indican por la linea de comandos
    Para salir de la consola Crtl+T y seguido Ctrl+X.
@@ -115,10 +116,10 @@ Q: Guardar y salir   Esc: Retroceder   Enter: Confirmar  ?: Para obtener informa
    Serial Flasher Config → Flash Size: 4 MB
    
    Calibración del Nivómetro:
-   Configuración de los parametros de calibración de ambos senrores y del proceso de calibración.
+   Configuración de los parametros de calibración de ambos sensores y del proceso de calibración.
 
    Comunicación Nivómetro:
-   Rellenar WiFi SSID, WiFi Password y MQTT Broker URI con la configuración deseada.
+   Rellenar WiFi SSID y WiFi Password con las credenciales deseadas.
 
 ## Estados del LED
 
@@ -145,4 +146,96 @@ Abre .env en tu editor y completa con tus datos:
 
 ## Configurar InfluxDB
 
+1. **Acceder a la interfaz web** de InfluxDB en http://localhost:8086
+2. **Crear un bucket:**
+
+Ir a **Load Data** → pestaña **Buckets**
+Seleccionar **Create Bucket** y llamarlo Simulacion_tfg
+
+
+3. **Explorar los datos:**
+
+En **Data Explorer**, seleccionar el bucket Simulacion_tfg que se ha creado
+Aplicar los siguientes filtros en orden:
+
+**measurement**: clicar en Nivometro
+**field**: clicar en value
+**host**: clicar en nivometro-sensor
+**topic**: clicar en sensors/ultrasonic y sensors/weight
+
+
+
+
+4. **Guardar el dashboard:**
+
+Dar clic en **Submit** para ver los resultados en InfluxDB
+Seleccionar **Save** y asignar el nombre deseado al dashboard
+Hacer clic en **Save as dashboard cell**
+
+
+5. **Crear dashboard permanente:**
+
+Ir a **Dashboards**, donde se verá la configuración creada en Data Explorer
+Guardar el dashboard con el nombre Nivometro
+
+
+
 ## Configurar Grafana
+
+1. **Configurar Data Source:**
+
+En Grafana (http://localhost:3000), seleccionar **Data sources**
+Crear un nuevo data source con el nombre medidas_tfg
+Configurar los siguientes parámetros:
+
+**Query Language**: Flux
+**URL**: http://influxdb:8086
+**Auth**: seleccionar Basic auth
+**Basic Auth Details**: introducir usuario y contraseña del archivo .env
+**InfluxDB Details:**
+
+**Organization:** my-tfg
+**Token**: el token creado y almacenado en .env
+
+
+**2. Verificar conexión:**
+
+Hacer clic en **Save & Test**
+Si todo funciona correctamente, seleccionar **Building a dashboard**
+
+
+3. **Crear dashboard:**
+
+En la pantalla del dashboard, seleccionar **Create dashboard → Add visualization**
+Seleccionar el data source creado anteriormente (medidas_tfg)
+
+
+4. **Configurar queries:**
+**Query para sensors/ultrasonic** (nombrar como "Ultrasonic"):
+   ```bash
+   from(bucket: "Simulacion_tfg")
+   |> range(start: -1h)
+   |> filter(fn: (r) =>
+         r._measurement == "Nivometro" and
+         r._field       == "value"       and
+         r.topic        == "sensors/ultrasonic"
+  )
+  |> aggregateWindow(every: 30s, fn: mean, createEmpty: false)
+  |> yield(name: "Ultrasonic")
+  ```
+**Query para sensors/weight** (nombrar como "Weight"):
+   ```bash
+   fluxfrom(bucket: "Simulacion_tfg")
+   |> range(start: -1h)
+   |> filter(fn: (r) =>
+         r._measurement == "Nivometro" and
+         r._field       == "value"       and
+         r.topic        == "sensors/weight"
+   )
+   |> aggregateWindow(every: 30s, fn: mean, createEmpty: false)
+   |> yield(name: "Weight")
+   ```
+
+5. **Guardar dashboard:**
+
+Hacer clic en **Save dashboard** y asignar el nombre Nivometro
