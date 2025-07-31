@@ -1,4 +1,4 @@
-// main.c - TFG Nivómetro Antártida con Modo Calibración Completo
+//File: main/main.c
 
 #include <stdio.h>
 #include <string.h>
@@ -10,18 +10,13 @@
 #include "esp_timer.h"
 #include "sdkconfig.h"
 
-// Código nivómetro
 #include "nivometro_sensors.h"
-
-// Módulos generales
 #include "diagnostics.h"
 #include "config.h"
 #include "storage.h"
 #include "communication.h"
 #include "power_manager.h"
 #include "utils.h"
-
-// Tareas FreeRTOS
 #include "tasks.h"
 
 static const char *TAG = "NIVOMETRO_MAIN";
@@ -38,31 +33,18 @@ static const char *TAG = "NIVOMETRO_MAIN";
 // Instancia global del nivómetro
 nivometro_t g_nivometro;
 
-// ==============================================================================
-// MODO CALIBRACIÓN - IMPLEMENTACIÓN COMPLETA
-// ==============================================================================
 
-/**
- * Ejecuta el modo calibración completo usando parámetros de menuconfig
- */
+// Modo calibración
+
 static void run_calibration_mode(void) {
-    ESP_LOGI(TAG, "========================================");
-    ESP_LOGI(TAG, "ENTRANDO EN MODO CALIBRACIÓN");
-    ESP_LOGI(TAG, "========================================");
+    ESP_LOGI(TAG, "===============ENTRANDO EN MODO CALIBRACIÓN===============");
     
     // Cambiar LED a modo calibración (parpadeo rápido)
     led_set_state(LED_STATE_CALIBRATION);
     
-    // CAMBIO: Limpiar TODA la partición NVS para máximo espacio disponible
-    ESP_LOGI(TAG, "Limpiando TODA la partición NVS para garantizar espacio...");
-    ESP_LOGI(TAG, "NOTA: Se borrarán WiFi, configuraciones y datos previos");
-    esp_err_t clear_result = calibration_erase_all_nvs_partition();
-    if (clear_result == ESP_OK) {
-        ESP_LOGI(TAG, "Partición NVS completamente limpiada y reinicializada");
-    } else {
-        ESP_LOGW(TAG, "Error limpiando partición NVS: %s (continuando...)", esp_err_to_name(clear_result));
-    }
-    
+    // Limpiar la partición NVS para máximo espacio disponible
+    esp_err_t clear_result = calibration_all_nvs_partition();
+        
     // Mostrar parámetros configurados
     ESP_LOGI(TAG, "Parámetros de calibración (desde menuconfig):");
     ESP_LOGI(TAG, "Peso conocido HX711: %d gramos", CONFIG_CALIBRATION_HX711_KNOWN_WEIGHT);
@@ -72,7 +54,6 @@ static void run_calibration_mode(void) {
     ESP_LOGI(TAG, "Muestras HC-SR04P: %d", CONFIG_CALIBRATION_HCSR04P_SAMPLES);
     ESP_LOGI(TAG, "Tolerancia HC-SR04P: ±%d%%", CONFIG_CALIBRATION_HCSR04P_TOLERANCE_PERCENT);
     
-    // Preparar estructura de calibración
     calibration_data_t cal_data = {0};
     cal_data.magic_number = CALIBRATION_MAGIC_NUMBER;
     cal_data.calibrated = false;
@@ -83,6 +64,7 @@ static void run_calibration_mode(void) {
     
     // === PASO 1: TARA HX711 ===
     ESP_LOGI(TAG, "PASO 1: Calibración HX711 - TARA");
+    ESP_LOGI(TAG, "El sistema tomará %d mediciones", CONFIG_CALIBRATION_HX711_SAMPLES);
     ESP_LOGI(TAG, "INSTRUCCIONES:");
     ESP_LOGI(TAG, "1. Asegúrate de que la balanza esté VACÍA");
     ESP_LOGI(TAG, "2. Presiona BOOT para continuar");
@@ -93,9 +75,7 @@ static void run_calibration_mode(void) {
     if (tare_result == ESP_OK) {
         ESP_LOGI(TAG, "Tara completada correctamente");
         cal_data.hx711_offset = g_nivometro.scale.offset;
-        
-        // *** GUARDAR TARA INMEDIATAMENTE EN NVS ***
-        cal_data.calibrated = false; // Aún no está completamente calibrado
+        cal_data.calibrated = false; 
         esp_err_t tare_save_result = calibration_save_to_nvs(&cal_data);
         if (tare_save_result == ESP_OK) {
             ESP_LOGI(TAG, "Tara guardada en NVS");
@@ -111,6 +91,7 @@ static void run_calibration_mode(void) {
     
     // === PASO 2: CALIBRACIÓN PESO HX711 ===
     ESP_LOGI(TAG, "PASO 2: Calibración HX711 - PESO CONOCIDO");
+    ESP_LOGI(TAG, "El sistema tomará %d mediciones", CONFIG_CALIBRATION_HX711_SAMPLES);
     ESP_LOGI(TAG, "INSTRUCCIONES:");
     ESP_LOGI(TAG, "1. Coloca un peso conocido de %d gramos", CONFIG_CALIBRATION_HX711_KNOWN_WEIGHT);
     ESP_LOGI(TAG, "2. Presiona BOOT para continuar");
@@ -158,7 +139,7 @@ static void run_calibration_mode(void) {
         cal_data.hcsr04p_cal_factor = HCSR04P_CAL_FACTOR;
     }
     
-    // === GUARDAR CALIBRACIÓN ===
+    // Guardar datos de calibración finales
     cal_data.calibrated = true;
     esp_err_t save_result = calibration_save_to_nvs(&cal_data);
     
@@ -167,8 +148,7 @@ static void run_calibration_mode(void) {
     } else {
         ESP_LOGE(TAG, "Error guardando calibraciones: %s", esp_err_to_name(save_result));
     }
-    
-    // === FINALIZACIÓN ===
+
     ESP_LOGI(TAG, "========================================");
     ESP_LOGI(TAG, "CALIBRACIÓN COMPLETADA CON ÉXITO");
     ESP_LOGI(TAG, "========================================");
@@ -181,24 +161,15 @@ static void run_calibration_mode(void) {
     // LED encendido fijo para indicar finalización
     led_set_state(LED_STATE_SOLID_ON);
     vTaskDelay(pdMS_TO_TICKS(CONFIG_CALIBRATION_CONFIRMATION_TIMEOUT_S * 1000));
-    
-    // Parpadear para confirmar guardado y reiniciar
-    for (int i = 0; i < 6; i++) {
-        led_set_state(i % 2 ? LED_STATE_SOLID_ON : LED_STATE_OFF);
-        vTaskDelay(pdMS_TO_TICKS(250));
-    }
-    
+        
     esp_restart();
 }
 
-// ==============================================================================
 // FUNCIÓN PRINCIPAL
-// ==============================================================================
-
 void app_main(void) {
     esp_err_t ret;
 
-    // 1) Inicializar GPIO para LED y botón BOOT ANTES que nada
+    // 1) Inicializar GPIO para LED y botón BOOT 
     led_init();
     boot_button_init();
     led_start_task();
@@ -209,7 +180,7 @@ void app_main(void) {
 
     // 3) Mensajes de arranque del nivómetro
     ESP_LOGI(TAG, "Iniciando TFG Nivómetro Antártida");
-    ESP_LOGI(TAG, "Versión con MODO CALIBRACIÓN AVANZADO");
+    ESP_LOGI(TAG, "Modo de alimentación: %s");
     ESP_LOGI(TAG, "USB conectado = Modo Nominal | Solo Batería = Deep Sleep");
 
     // 4) Inicialización explícita de NVS
@@ -220,7 +191,7 @@ void app_main(void) {
     }
     ESP_ERROR_CHECK(ret);
 
-    // 5) *** VERIFICAR MODO CALIBRACIÓN ***
+    // 5) Modo calibración
     if (boot_button_check_calibration_mode()) {
         ESP_LOGI(TAG, "Botón BOOT detectado - Entrando en modo calibración");
         
@@ -241,20 +212,17 @@ void app_main(void) {
         ret = nivometro_init(&g_nivometro, &nivometro_config);
         ESP_ERROR_CHECK(ret);
         
-        // EJECUTAR CALIBRACIÓN COMPLETA
         run_calibration_mode();
         
-        // Esta línea nunca se ejecuta porque run_calibration_mode() reinicia
-        return;
     }
     
-    // *** CONTINUAR CON ARRANQUE NORMAL ***
-    ESP_LOGI(TAG, "Arranque normal - Verificando calibración existente");
+    //Continua con el arranque normal
+    ESP_LOGI(TAG, "Arranque normal");
 
     // 6) Configuración global
     config_init();
-    
-    // 7) *** VERIFICAR CALIBRACIÓN EXISTENTE ***
+
+    // 7) Validación de calibración
     bool calibration_valid = calibration_check_and_warn();
     
     // 8) Configurar LED según estado de calibración
@@ -263,7 +231,7 @@ void app_main(void) {
         ESP_LOGI(TAG, "LED configurado: parpadeo lento - Sistema calibrado");
     } else {
         led_set_state(LED_STATE_WARNING);
-        ESP_LOGI(TAG, "LED configurado: parpadeo medio - REQUIERE CALIBRACIÓN");
+        ESP_LOGI(TAG, "LED configurado: parpadeo medio - Requiere calibración");
     }
     
     // 9) Inicializar el nivómetro 
@@ -274,7 +242,7 @@ void app_main(void) {
         .hx711_dout_pin      = HX711_DOUT_PIN,
         .hx711_sck_pin       = HX711_SCK_PIN,
         .hx711_gain          = HX711_GAIN_128,
-        .hx711_known_weight  = HX711_KNOWN_WEIGHT_G  // Corregido el typo
+        .hx711_known_weight  = HX711_KNOWN_WEIGHT_G 
     };
     ret = nivometro_init(&g_nivometro, &nivometro_config);
     if (ret != ESP_OK) {
@@ -283,7 +251,7 @@ void app_main(void) {
         return;
     }
     
-    // 10) *** APLICAR CALIBRACIÓN DESDE NVS SI EXISTE ***
+    // 10)Aplicar calibración desde NVS
     calibration_data_t cal_data = {0};
     if (calibration_load_from_nvs(&cal_data) == ESP_OK) {
         calibration_apply_to_sensors(&g_nivometro, &cal_data);
@@ -300,7 +268,6 @@ void app_main(void) {
 
     // 11) Almacenamiento local
     storage_init();
-    ESP_LOGI(TAG, "Almacenamiento inicializado");
 
     // 12) Comunicaciones (Wi-Fi, MQTT, sincronización de hora)
     communication_init();
@@ -308,38 +275,28 @@ void app_main(void) {
 
     // 13) GESTIÓN DE ENERGÍA CON DETECCIÓN USB/BATERÍA
     power_manager_init();
-    //power_manager_force_battery_simulation();
+    //power_manager_force_battery_simulation();  // Descomentar para forzar simulación de batería
     
-    // Log del estado inicial de alimentación
     if (power_manager_is_usb_connected()) {
         ESP_LOGI(TAG, "USB Conectado - Iniciando en modo nominal");
-        ESP_LOGI(TAG, "Mediciones frecuentes, WiFi siempre activo, sin deep_sleep");
     } else {
         ESP_LOGI(TAG, "SOLO BATERÍA - Iniciando en modo batería");
-        ESP_LOGI(TAG, "Mediciones rápidas, deep_sleep automático cada 30s");
+        ESP_LOGI(TAG, "Deep_sleep automático cada 30s");
     }
 
-    // 14) Temporizador interno / scheduler
+    // 14) Temporizador interno
     timer_manager_init();
-    ESP_LOGI(TAG, "Timer manager inicializado");
 
     // 15) Log de configuración detallada
     ESP_LOGI(TAG, "Todos los sensores inicializados correctamente");
     ESP_LOGI(TAG, "Configuración del sistema:");
-    ESP_LOGI(TAG, "HC-SR04P: Pines %d (trigger) y %d (echo)", HCSR04P_TRIGGER_PIN, HCSR04P_ECHO_PIN);
-    ESP_LOGI(TAG, "HX711: Pines %d (DOUT) y %d (SCK)", HX711_DOUT_PIN, HX711_SCK_PIN);
-    ESP_LOGI(TAG, "Calibración: %s", calibration_valid ? "✅ VÁLIDA" : "⚠️  PENDIENTE");
     ESP_LOGI(TAG, "Power Management: GPIO 34 para detección USB/Batería");
-    // CAMBIO: Información actualizada sobre LED externo
-    ESP_LOGI(TAG, "LED Estado: GPIO %d (LED externo - GPIO 2 tenía conflicto USB)", LED_STATUS_PIN);
-    
+
     // 17) ARRANCAR TAREAS CON GESTIÓN INTELIGENTE DE ENERGÍA
     tasks_start_all();
 
     ESP_LOGI(TAG, "Sistema iniciado completamente");
-    ESP_LOGI(TAG, "Monitorea los logs para ver el comportamiento según la fuente de alimentación");
     if (!calibration_valid) {
         ESP_LOGW(TAG, "RECORDATORIO: Para calibrar, reinicia manteniendo BOOT presionado");
     }
-    ESP_LOGI(TAG, "==========================================");
 }

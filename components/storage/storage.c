@@ -1,3 +1,5 @@
+// File: components/power_manager/power_manager.c
+
 #include "storage.h"
 #include "nvs_flash.h"
 #include "nvs.h"

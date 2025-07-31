@@ -1,4 +1,4 @@
-// hcsr04p.c
+// File: components/nivometro_sensors/src/hcsr04p.c
 #include "hcsr04p.h"
 
 #define HCSR04P_TIMEOUT_US 25000  // 25ms timeout

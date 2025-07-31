@@ -1,4 +1,5 @@
 // File: components/utils/utils.c
+
 #include "utils.h"
 #include "sdkconfig.h"
 #include <stdio.h>
@@ -14,10 +15,6 @@
 #include "driver/gpio.h"
 
 static const char* TAG = "utils";
-
-// ==============================================================================
-// FUNCIONES ORIGINALES DE UTILS
-// ==============================================================================
 
 void timer_manager_init(void)
 {
@@ -41,23 +38,15 @@ int data_formatter_format_json(const sensor_data_t *data, char *buf, size_t bufs
     );
 }
 
-// ==============================================================================
-// SISTEMA DE CONTROL LED
-// ==============================================================================
-
 // Variables globales para control del LED
 static TaskHandle_t led_task_handle = NULL;
 static led_state_t current_led_state = LED_STATE_OFF;
 
-/**
- * Tarea para controlar el LED según el estado actual
- */
+// Controla el LED según el estado actual
 static void led_control_task(void *pvParameters) {
     bool led_physical_state = false;
     uint32_t delay_ms;
-    
-    ESP_LOGI(TAG, "Tarea de control LED iniciada");
-    
+       
     while (1) {
         switch (current_led_state) {
             case LED_STATE_NORMAL:
@@ -107,7 +96,6 @@ static void led_control_task(void *pvParameters) {
 }
 
 void led_init(void) {
-    // CAMBIO: Configuración más robusta para GPIO 16 (evitar conflictos como en GPIO 2)
     // Resetear completamente el pin primero
     gpio_reset_pin(LED_STATUS_PIN);
     
@@ -130,18 +118,14 @@ void led_init(void) {
     gpio_set_level(LED_STATUS_PIN, 0);
     current_led_state = LED_STATE_OFF;
     
-    // CAMBIO: Mensaje actualizado para reflejar que es LED externo en GPIO 16
-    ESP_LOGI(TAG, "LED de estado inicializado en GPIO %d (LED externo)", LED_STATUS_PIN);
-    ESP_LOGI(TAG, "CONEXIÓN: GPIO 16 → Resistencia 330Ω → LED+ → LED- → GND");
 }
-
 void led_start_task(void) {
     if (led_task_handle == NULL) {
         xTaskCreate(led_control_task, "led_control", 2048, NULL, 1, &led_task_handle);
         ESP_LOGI(TAG, "Tarea de control LED iniciada");
     }
 }
-
+// Cambia el estado del LED y actualiza la tarea de control
 void led_set_state(led_state_t state) {
     current_led_state = state;
     const char* state_names[] = {
@@ -150,23 +134,21 @@ void led_set_state(led_state_t state) {
     };
     ESP_LOGI(TAG, "LED estado cambiado: %s", state_names[state]);
 }
-
 led_state_t led_get_state(void) {
     return current_led_state;
 }
-
 void led_stop_task(void) {
     if (led_task_handle != NULL) {
         vTaskDelete(led_task_handle);
         led_task_handle = NULL;
         gpio_set_level(LED_STATUS_PIN, 0);
-        ESP_LOGI(TAG, "Tarea de control LED detenida");
+        
     }
 }
 
-// Definiciones fijas para NVS (sin menuconfig)
-#define CALIBRATION_NVS_NAMESPACE   "calibration"
-#define CALIBRATION_MAGIC_NUMBER    0xCAFEBABE
+// Definiciones fijas para NVS
+#define CALIBRATION_NVS_NAMESPACE   "calibration" // Namespace para datos de calibración
+#define CALIBRATION_MAGIC_NUMBER    0xCAFEBABE 
 
 esp_err_t calibration_save_to_nvs(const calibration_data_t *cal_data) {
     nvs_handle_t nvs_handle;
@@ -193,9 +175,9 @@ esp_err_t calibration_save_to_nvs(const calibration_data_t *cal_data) {
     
     if (err == ESP_OK) {
         ESP_LOGI(TAG, "Datos de calibración guardados en NVS");
-    } else {
+    } /*else {
         ESP_LOGE(TAG, "Error confirmando escritura: %s", esp_err_to_name(err));
-    }
+    }*/
     
     return err;
 }
@@ -203,8 +185,7 @@ esp_err_t calibration_save_to_nvs(const calibration_data_t *cal_data) {
 esp_err_t calibration_load_from_nvs(calibration_data_t *cal_data) {
     nvs_handle_t nvs_handle;
     esp_err_t err;
-    
-    // Abrir NVS
+
     err = nvs_open(CALIBRATION_NVS_NAMESPACE, NVS_READONLY, &nvs_handle);
     if (err != ESP_OK) {
         ESP_LOGW(TAG, "No se pudo abrir NVS para calibración: %s", esp_err_to_name(err));
@@ -221,7 +202,7 @@ esp_err_t calibration_load_from_nvs(calibration_data_t *cal_data) {
         // Validar datos
         if (cal_data->magic_number == CALIBRATION_MAGIC_NUMBER && cal_data->calibrated) {
             ESP_LOGI(TAG, "Datos de calibración cargados desde NVS");
-            ESP_LOGI(TAG, "HX711 - Scale: %.6f, Offset: %ld", 
+            ESP_LOGI(TAG, "HX711 - Escala: %.6f, Offset: %ld", 
                      cal_data->hx711_scale_factor, cal_data->hx711_offset);
             ESP_LOGI(TAG, "HC-SR04P - Factor: %.6f", cal_data->hcsr04p_cal_factor);
             return ESP_OK;
@@ -238,46 +219,7 @@ esp_err_t calibration_load_from_nvs(calibration_data_t *cal_data) {
     }
 }
 
-esp_err_t calibration_clear_nvs(void) {
-    nvs_handle_t nvs_handle;
-    esp_err_t err;
-    
-    // CAMBIO: Función mejorada para limpiar completamente el namespace de calibración
-    err = nvs_open(CALIBRATION_NVS_NAMESPACE, NVS_READWRITE, &nvs_handle);
-    if (err != ESP_OK) {
-        // Si no se puede abrir, probablemente no existe datos previos
-        if (err == ESP_ERR_NVS_NOT_FOUND) {
-            ESP_LOGI(TAG, "No existe namespace de calibración previo");
-            return ESP_ERR_NVS_NOT_FOUND;
-        }
-        ESP_LOGE(TAG, "Error abriendo NVS para limpieza: %s", esp_err_to_name(err));
-        return err;
-    }
-    
-    // Borrar todo el namespace (más efectivo que solo la key)
-    err = nvs_erase_all(nvs_handle);
-    if (err == ESP_OK) {
-        ESP_LOGI(TAG, "Namespace de calibración completamente limpiado");
-    } else if (err == ESP_ERR_NVS_NOT_FOUND) {
-        ESP_LOGI(TAG, "No había datos de calibración que limpiar");
-        err = ESP_OK; // No es un error real
-    } else {
-        ESP_LOGE(TAG, "Error borrando datos: %s", esp_err_to_name(err));
-    }
-    
-    // Confirmar cambios
-    esp_err_t commit_err = nvs_commit(nvs_handle);
-    if (commit_err != ESP_OK) {
-        ESP_LOGW(TAG, "Error confirmando limpieza: %s", esp_err_to_name(commit_err));
-    }
-    
-    nvs_close(nvs_handle);
-    
-    return err;
-}
-
-esp_err_t calibration_erase_all_nvs_partition(void) {
-    ESP_LOGI(TAG, "Borrando TODA la partición NVS para liberar máximo espacio...");
+esp_err_t calibration_all_nvs_partition(void) {
     
     // Borrar completamente toda la partición NVS
     esp_err_t err = nvs_flash_erase();
@@ -286,11 +228,6 @@ esp_err_t calibration_erase_all_nvs_partition(void) {
         
         // Reinicializar NVS completamente
         err = nvs_flash_init();
-        if (err == ESP_OK) {
-            ESP_LOGI(TAG, "NVS reinicializado completamente");
-        } else {
-            ESP_LOGE(TAG, "Error reinicializando NVS: %s", esp_err_to_name(err));
-        }
     } else {
         ESP_LOGE(TAG, "Error borrando partición NVS: %s", esp_err_to_name(err));
     }
@@ -308,7 +245,7 @@ bool calibration_check_and_warn(void) {
             cal_data.hcsr04p_cal_factor == 0.0f) {
             
             ESP_LOGW(TAG, "========================================");
-            ESP_LOGW(TAG, "ADVERTENCIA: CALIBRACIÓN INVÁLIDA");
+            ESP_LOGW(TAG, "ADVERTENCIA: DATOS A CERO");
             ESP_LOGW(TAG, "========================================");
             ESP_LOGW(TAG, "Los datos de calibración contienen valores cero");
             ESP_LOGW(TAG, "Para obtener mediciones precisas:");
@@ -347,12 +284,9 @@ esp_err_t calibration_apply_to_sensors(nivometro_t *nivometro, const calibration
     return ESP_OK;
 }
 
-// ==============================================================================
-// DETECCIÓN BOTÓN BOOT PARA MODO CALIBRACIÓN
-// ==============================================================================
 
 void boot_button_init(void) {
-    // Configurar botón BOOT (con pull-up interno)
+    // Configurar botón BOOT
     gpio_config_t boot_btn_config = {
         .pin_bit_mask = (1ULL << BOOT_BUTTON_PIN),
         .mode = GPIO_MODE_INPUT,
@@ -366,7 +300,6 @@ void boot_button_init(void) {
 }
 
 bool boot_button_check_calibration_mode(void) {
-    ESP_LOGI(TAG, "Verificando modo calibración...");
     ESP_LOGI(TAG, "INSTRUCCIONES: Mantén presionado el botón BOOT para calibrar");
     
     uint32_t pressed_time = 0;
@@ -421,10 +354,6 @@ void boot_button_wait_for_press(void) {
     
     ESP_LOGI(TAG, "Confirmación recibida");
 }
-
-// ==============================================================================
-// FUNCIONES DE VALIDACIÓN Y UTILIDADES
-// ==============================================================================
 
 bool validate_calibration_data(const calibration_data_t *cal_data) {
     if (!cal_data) return false;

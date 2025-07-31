@@ -1,4 +1,6 @@
-#pragma once                                 // Le indica al compilador que procese este fichero solo una vez por compilacion
+// File: components/power_manager/include/power_manager.h
+
+#pragma once        // Le indica al compilador que procese este fichero solo una vez por compilacion
 
 #include <stdbool.h>
 
