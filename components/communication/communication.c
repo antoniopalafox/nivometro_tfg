@@ -152,12 +152,12 @@ void communication_publish(const sensor_data_t* data) {
     get_iso8601_utc(ts, sizeof(ts));
 
     // Publicar valor del sensor de ultrasonidos
-    snprintf(msg, sizeof(msg), "{\"Valor\": %.2f, \"timestamp\": \"%s\"}", data->distance_cm, ts); 
+    snprintf(msg, sizeof(msg), "{\"value\": %.2f, \"timestamp\": \"%s\"}", data->distance_cm, ts); 
     esp_mqtt_client_publish(mqtt_client, MQTT_TOPIC_ULTRASONIC, msg, 0, 1, 0);
     ESP_LOGI(TAG, "Publicado en %s: %s", MQTT_TOPIC_ULTRASONIC, msg);
 
     // Publicar valor del sensor de peso
-    snprintf(msg, sizeof(msg), "{\"Valor\": %.2f, \"timestamp\": \"%s\"}", data->weight_kg, ts);
+    snprintf(msg, sizeof(msg), "{\"value\": %.2f, \"timestamp\": \"%s\"}", data->weight_kg, ts);
     esp_mqtt_client_publish(mqtt_client, MQTT_TOPIC_WEIGHT, msg, 0, 1, 0);
     ESP_LOGI(TAG, "Publicado en %s: %s", MQTT_TOPIC_WEIGHT, msg);
 
