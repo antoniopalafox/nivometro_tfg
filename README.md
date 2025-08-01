@@ -141,10 +141,10 @@ Es proyecto tiene un programado un LED rojo externo el cual va a indiar en que e
 
 Este proyecto tiene programado un LED rojo externo que indica en qué estado se encuentra el sistema:
 
-- **🔴 NORMAL**: Parpadeo cada 2 segundos (muy lento)
+- **🟢 NORMAL**: Parpadeo cada 2 segundos (muy lento)
 - **🟡 WARNING**: Parpadeo cada 0.8 segundos (medio)  
 - **🔵 CALIBRATION**: Parpadeo cada 0.2 segundos (rápido)
-- **⚫ ERROR**: Parpadeo cada 0.075 segundos (muy rápido)
+- **🔴 ERROR**: Parpadeo cada 0.075 segundos (muy rápido)
 - **⚪ PROCESO COMPLETO**: Encendido fijo
 
 ---
