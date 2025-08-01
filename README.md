@@ -116,15 +116,23 @@ Gracias a la **gestión de la alimentación**, el dispositivo puede funcionar **
    
 ## Menuconfig
 
-**Q**: Guardar y salir   **S**: Guardar  **Esc**: Retroceder   **Enter**: Confirmar  **?**: Para obtener informacion del prompt
+**Controles de navegación:**
+   - **Q**: Guardar y salir
+   - **S**: Guardar  
+   - **Esc**: Retroceder
+   - **Enter**: Confirmar
+   - **?**: Obtener información del prompt
 
-   Serial Flasher Config → Flash Size: 4 MB
-   
-   **Calibración del Nivómetro**:
-   Configuración de los parametros de calibración de ambos sensores y del proceso de calibración.
+**Configuraciones importantes**:
 
-   **Comunicación Nivómetro**:
-   Rellenar WiFi SSID y WiFi Password con las credenciales deseadas.
+   1. **Serial Flasher Config → Flash Size: 4 MB**  
+      Configurar el tamaño de la memoria flash del ESP32
+
+   2. **Calibración del Nivómetro**  
+      Configuración de los parámetros de calibración de ambos sensores y del proceso de calibración
+
+   3. **Comunicación Nivómetro**  
+      Rellenar WiFi SSID, WiFi Password y MQTT Broker URI con las credenciales deseadas
 
 ---
 
