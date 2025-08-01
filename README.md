@@ -131,11 +131,11 @@ Gracias a la **gestión de la alimentación**, el dispositivo puede funcionar **
 ## Estados del LED
 
 Es proyecto tiene un programado un LED rojo externo el cual va a indiar en que estado se encuentra el sistema.
-🟢 **NORMAL**: Parpadeo cada 2 segundos (muy lento).
-🟡 **WARNING**: Parpadeo cada 0.8 segundos (medio).
-🔵 **CALIBRATION**: Parpadeo cada 0.2 segundos (rápido).
-🔴 **ERROR**: Parpadeo cada 0.075 segundos (muy rápido).
-⚪ **PROCESO COMPLETO**: encendido fijo.
+-**🟢 NORMAL**: Parpadeo cada 2 segundos (muy lento).
+-**🟡 WARNING**: Parpadeo cada 0.8 segundos (medio).
+-**🔵CALIBRATION**: Parpadeo cada 0.2 segundos (rápido).
+-**🔴 ERROR**: Parpadeo cada 0.075 segundos (muy rápido).
+-**⚪ PROCESO COMPLETO**: encendido fijo.
 
 ---
 
@@ -148,12 +148,13 @@ Para entrar en modo calibración debes mantén presionado **BOOT** durante los s
 ## Variables de entorno .env
 
 Abre .env en tu editor y completa con tus datos:
-
+```
    DOCKER_INFLUXDB_INIT_USERNAME=<tu_usuario_influx>
    DOCKER_INFLUXDB_INIT_PASSWORD=<tu_password_influx>
    DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=<tu_token_influx>
    GF_ADMIN_USER=<tu_usuario_grafana>
    GF_ADMIN_PASSWORD=<tu_password_grafana>
+```
 
 ---
 
