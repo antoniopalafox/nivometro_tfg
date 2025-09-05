@@ -273,17 +273,26 @@ void app_main(void) {
     communication_init();
     ESP_LOGI(TAG, "Comunicaciones inicializadas");
 
-    // 13) GESTIÓN DE ENERGÍA CON DETECCIÓN USB/BATERÍA
+    // 13) GESTIÓN DE ENERGÍA CON DETECCIÓN REAL POR GPIO
     power_manager_init();
-    //power_manager_force_battery_simulation();  // Descomentar para forzar simulación de batería
     
-    if (power_manager_is_usb_connected()) {
-        ESP_LOGI(TAG, "USB Conectado - Iniciando en modo nominal");
+    // Mostrar estado inicial de alimentación
+    power_source_t initial_power = power_manager_get_source();
+    if (initial_power == POWER_SOURCE_USB) {
+        ESP_LOGI(TAG, "USB DETECTADO (GPIO 4 = 1) - Iniciando en modo nominal");
+        ESP_LOGI(TAG, "Comportamiento: Mediciones cada 5 segundos, sin deep sleep");
     } else {
-        ESP_LOGI(TAG, "SOLO BATERÍA - Iniciando en modo batería");
-        ESP_LOGI(TAG, "Deep_sleep automático cada 30s");
+        ESP_LOGI(TAG, "SOLO BATERÍA DETECTADA (GPIO 4 = 0) - Iniciando en modo batería");
+        ESP_LOGI(TAG, "Comportamiento: Mediciones cada 60 segundos + deep sleep automático");
     }
+    
+    // Debug opcional: mostrar estado del GPIO
+    power_manager_debug_gpio_state();
+    
+    // QUITAR ESTAS LÍNEAS - ya no son necesarias
+    // power_manager_force_battery_simulation();  // COMENTADO - modo real activo
 
+    
     // 14) Temporizador interno
     timer_manager_init();
 

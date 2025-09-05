@@ -1,5 +1,3 @@
-// File: components/power_manager/include/power_manager.h
-
 #pragma once        // Le indica al compilador que procese este fichero solo una vez por compilacion
 
 #include <stdbool.h>
@@ -15,13 +13,15 @@ void power_manager_init(void);               // Inicializa la configuración y p
 bool power_manager_should_sleep(void);       // Comprueba si se cumplen las condiciones para entrar en bajo consumo  
 void power_manager_enter_deep_sleep(void);   // Configura y activa el deep sleep del microcontrolador
 
-// Nuevas funciones para detección de alimentación
+// Funciones para detección de alimentación
 power_source_t power_manager_get_source(void);    // Obtiene la fuente de alimentación actual (USB o batería)
 bool power_manager_is_usb_connected(void);        // Devuelve true si USB está conectado
 
+// Función de diagnóstico
+void power_manager_debug_gpio_state(void);        // Muestra el estado actual del GPIO de detección
+
 // -----------------------------------------------------------------------------
-// Estas tres funciones permiten forzar o reanudar la simulación de alimentación
-// (solo cuando `simulation_enabled == true` en power_manager.c).
+// FUNCIONES DE SIMULACIÓN (COMENTADAS - NO DISPONIBLES EN MODO REAL)
 // -----------------------------------------------------------------------------
 /*void power_manager_force_usb_simulation(void);     // Fuerza modo USB en simulación
 void power_manager_force_battery_simulation(void); // Fuerza modo BATERÍA en simulación
