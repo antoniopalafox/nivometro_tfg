@@ -17,6 +17,7 @@
 static const char* TAG = "communication";              // Etiqueta que usará esp_logx para clasificar mensajes de este módulo
 static esp_mqtt_client_handle_t mqtt_client = NULL;    // Puntero al cliente mqtt una vez inicializado
 static bool mqtt_started = false;                      // Indica si ya se ha arrancado el cliente mqtt
+static bool mqtt_connected = false;                    // Variable para rastrear estado de conexión MQTT
 
 // Grupo de eventos para coordinar estado wifi y mqtt
 static EventGroupHandle_t comm_event_group;
@@ -102,6 +103,7 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t e
         // Si se desconecta: limpiar bits y reintentar
         xEventGroupClearBits(comm_event_group, WIFI_CONNECTED_BIT | MQTT_CONNECTED_BIT);
         mqtt_started = false;
+        mqtt_connected = false;
         esp_wifi_connect();
 
     } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
@@ -114,12 +116,23 @@ static void mqtt_event_handler(void* handler_args, esp_event_base_t base, int32_
     // Lógica para eventos del cliente mqtt
     if (event_id == MQTT_EVENT_CONNECTED) {
         // Se conectó al broker -> marcar mqtt listo
+        mqtt_connected = true;
         xEventGroupSetBits(comm_event_group, MQTT_CONNECTED_BIT);
+        ESP_LOGI(TAG, "MQTT conectado al broker");
 
     } else if (event_id == MQTT_EVENT_DISCONNECTED) {
         // Desconexión del broker -> limpiar bit y marcar estado
+        mqtt_connected = false;
         xEventGroupClearBits(comm_event_group, MQTT_CONNECTED_BIT);
         mqtt_started = false;
+        ESP_LOGW(TAG, "MQTT desconectado del broker");
+        
+    } else if (event_id == MQTT_EVENT_PUBLISHED) {
+        esp_mqtt_event_handle_t event = (esp_mqtt_event_handle_t)event_data;
+        ESP_LOGD(TAG, "Mensaje MQTT enviado - msg_id: %d", event->msg_id);
+        
+    } else if (event_id == MQTT_EVENT_ERROR) {
+        ESP_LOGE(TAG, "Error en evento MQTT");
     }
 }
 
@@ -143,6 +156,10 @@ static void get_iso8601_utc(char *out, size_t out_size) {
     strftime(out, out_size, "%Y-%m-%dT%H:%M:%SZ", &tm_utc);
 }
 
+bool communication_is_mqtt_connected(void) {
+    return mqtt_connected;
+}
+
 void communication_publish(const sensor_data_t* data) {
     // Protege contra llamadas inválidas
     if (!mqtt_client || !data) return;
@@ -160,5 +177,4 @@ void communication_publish(const sensor_data_t* data) {
     snprintf(msg, sizeof(msg), "{\"value\": %.2f, \"timestamp\": \"%s\"}", data->weight_kg, ts);
     esp_mqtt_client_publish(mqtt_client, MQTT_TOPIC_WEIGHT, msg, 0, 1, 0);
     ESP_LOGI(TAG, "Publicado en %s: %s", MQTT_TOPIC_WEIGHT, msg);
-
 }

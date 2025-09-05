@@ -6,6 +6,7 @@
 #include "freertos/task.h"
 #include "esp_system.h"
 #include "esp_log.h"
+#include "esp_sleep.h"
 #include "nvs_flash.h"
 #include "esp_timer.h"
 #include "sdkconfig.h"
@@ -33,9 +34,63 @@ static const char *TAG = "NIVOMETRO_MAIN";
 // Instancia global del nivómetro
 nivometro_t g_nivometro;
 
+// Función para reinicializar HX711 después de deep sleep
+static esp_err_t reinitialize_hx711_after_deep_sleep(void) {
+    esp_sleep_wakeup_cause_t wakeup_reason = esp_sleep_get_wakeup_cause();
+    
+    if (wakeup_reason == ESP_SLEEP_WAKEUP_TIMER) {
+        ESP_LOGI(TAG, "🔧 Reinicializando HX711 tras deep sleep");
+        
+        // Power cycle completo del HX711
+        hx711_power_down(&g_nivometro.scale);
+        vTaskDelay(pdMS_TO_TICKS(100));
+        
+        hx711_power_up(&g_nivometro.scale);
+        vTaskDelay(pdMS_TO_TICKS(300));
+        
+        // Verificar que responde
+        int max_attempts = 10;
+        int attempt = 0;
+        while (!hx711_is_ready(&g_nivometro.scale) && attempt < max_attempts) {
+            ESP_LOGD(TAG, "HX711 no listo, intento %d/%d", attempt + 1, max_attempts);
+            vTaskDelay(pdMS_TO_TICKS(100));
+            attempt++;
+        }
+        
+        if (hx711_is_ready(&g_nivometro.scale)) {
+            ESP_LOGI(TAG, "✅ HX711 responde tras %d intentos", attempt + 1);
+            
+            // Re-aplicar calibración
+            calibration_data_t cal_data = {0};
+            if (calibration_load_from_nvs(&cal_data) == ESP_OK) {
+                g_nivometro.scale.scale = cal_data.hx711_scale_factor;
+                g_nivometro.scale.offset = cal_data.hx711_offset;
+                ESP_LOGI(TAG, "✅ Calibración reaplicada");
+                
+                // Hacer lectura de prueba
+                float test_weight;
+                esp_err_t test_result = hx711_read_units(&g_nivometro.scale, &test_weight);
+                if (test_result == ESP_OK) {
+                    ESP_LOGI(TAG, "✅ Lectura de prueba exitosa: %.2f g", test_weight);
+                    return ESP_OK;
+                } else {
+                    ESP_LOGE(TAG, "❌ Lectura de prueba falló");
+                    return ESP_FAIL;
+                }
+            } else {
+                ESP_LOGE(TAG, "❌ No se pudo cargar calibración desde NVS");
+                return ESP_FAIL;
+            }
+        } else {
+            ESP_LOGE(TAG, "❌ HX711 no responde después de %d intentos", max_attempts);
+            return ESP_FAIL;
+        }
+    }
+    
+    return ESP_OK; // No era deep sleep wakeup
+}
 
 // Modo calibración
-
 static void run_calibration_mode(void) {
     ESP_LOGI(TAG, "===============ENTRANDO EN MODO CALIBRACIÓN===============");
     
@@ -44,6 +99,11 @@ static void run_calibration_mode(void) {
     
     // Limpiar la partición NVS para máximo espacio disponible
     esp_err_t clear_result = calibration_all_nvs_partition();
+    if (clear_result == ESP_OK) {
+        ESP_LOGI(TAG, "Partición NVS limpiada para calibración");
+    } else {
+        ESP_LOGW(TAG, "Error limpiando NVS: %s", esp_err_to_name(clear_result));
+    }
         
     // Mostrar parámetros configurados
     ESP_LOGI(TAG, "Parámetros de calibración (desde menuconfig):");
@@ -189,8 +249,6 @@ void app_main(void) {
         ESP_ERROR_CHECK(nvs_flash_erase());
         ret = nvs_flash_init();
     }
-    ESP_ERROR_CHECK(ret);
-
     // 5) Modo calibración
     if (boot_button_check_calibration_mode()) {
         ESP_LOGI(TAG, "Botón BOOT detectado - Entrando en modo calibración");
@@ -251,7 +309,7 @@ void app_main(void) {
         return;
     }
     
-    // 10)Aplicar calibración desde NVS
+    // 10) Aplicar calibración desde NVS
     calibration_data_t cal_data = {0};
     if (calibration_load_from_nvs(&cal_data) == ESP_OK) {
         calibration_apply_to_sensors(&g_nivometro, &cal_data);
@@ -264,16 +322,22 @@ void app_main(void) {
         ESP_LOGW(TAG, "Usando valores de calibración por defecto");
     }
     
+    // 11) Fix específico para HX711 tras deep sleep
+    esp_err_t hx711_init_result = reinitialize_hx711_after_deep_sleep();
+    if (hx711_init_result != ESP_OK) {
+        ESP_LOGW(TAG, "⚠️ Problema reinicializando HX711, pero continuando...");
+    }
+    
     ESP_LOGI(TAG, "Nivómetro inicializado correctamente");
 
-    // 11) Almacenamiento local
+    // 12) Almacenamiento local
     storage_init();
 
-    // 12) Comunicaciones (Wi-Fi, MQTT, sincronización de hora)
+    // 13) Comunicaciones (Wi-Fi, MQTT, sincronización de hora)
     communication_init();
     ESP_LOGI(TAG, "Comunicaciones inicializadas");
 
-    // 13) GESTIÓN DE ENERGÍA CON DETECCIÓN REAL POR GPIO
+    // 14) GESTIÓN DE ENERGÍA CON DETECCIÓN REAL POR GPIO
     power_manager_init();
     
     // Mostrar estado inicial de alimentación
@@ -285,21 +349,14 @@ void app_main(void) {
         ESP_LOGI(TAG, "SOLO BATERÍA DETECTADA (GPIO 4 = 0) - Iniciando en modo batería");
         ESP_LOGI(TAG, "Comportamiento: Mediciones cada 60 segundos + deep sleep automático");
     }
-    
-    // Debug opcional: mostrar estado del GPIO
-    power_manager_debug_gpio_state();
-    
-    // QUITAR ESTAS LÍNEAS - ya no son necesarias
-    // power_manager_force_battery_simulation();  // COMENTADO - modo real activo
 
-    
-    // 14) Temporizador interno
+    // 15) Temporizador interno
     timer_manager_init();
 
-    // 15) Log de configuración detallada
+    // 16) Log de configuración detallada
     ESP_LOGI(TAG, "Todos los sensores inicializados correctamente");
     ESP_LOGI(TAG, "Configuración del sistema:");
-    ESP_LOGI(TAG, "Power Management: GPIO 34 para detección USB/Batería");
+    ESP_LOGI(TAG, "Power Management: GPIO 4 para detección USB/Batería");
 
     // 17) ARRANCAR TAREAS CON GESTIÓN INTELIGENTE DE ENERGÍA
     tasks_start_all();

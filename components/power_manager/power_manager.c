@@ -1,3 +1,5 @@
+// File: components/power_manager/power_manager.c
+
 #include "power_manager.h"
 #include "esp_sleep.h"
 #include "esp_log.h"

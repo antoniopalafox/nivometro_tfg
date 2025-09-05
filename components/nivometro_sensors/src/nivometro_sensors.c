@@ -66,15 +66,38 @@ esp_err_t nivometro_read_all_sensors(nivometro_t *nivometro, nivometro_data_t *d
         data->sensor_status |= 0x01; // Bit 0 = HC-SR04P OK
     }
     
-    // Leer HX711 - CORREGIDO: usar puntero para recibir el valor
-    float weight_units;
-    esp_err_t hx711_result = hx711_read_units(&nivometro->scale, &weight_units);
-    if (hx711_result == ESP_OK) {
-        data->weight_grams = weight_units;
-        data->sensor_status |= 0x02; // Bit 1 = HX711 OK
+    // Leer HX711 - VERSION LIMPIA CON RECUPERACION AUTOMATICA
+    bool hx711_ready = hx711_is_ready(&nivometro->scale);
+    
+    if (!hx711_ready) {
+        ESP_LOGD(TAG, "HX711 no listo, reactivando...");
+        hx711_power_up(&nivometro->scale);
+        vTaskDelay(pdMS_TO_TICKS(200));
+        hx711_ready = hx711_is_ready(&nivometro->scale);
+    }
+    
+    if (hx711_ready) {
+        float weight_units = 0;
+        esp_err_t read_result = ESP_FAIL;
+        
+        // Intentar hasta 3 veces
+        for (int attempt = 0; attempt < 3 && read_result != ESP_OK; attempt++) {
+            read_result = hx711_read_units(&nivometro->scale, &weight_units);
+            if (read_result != ESP_OK) {
+                vTaskDelay(pdMS_TO_TICKS(100));
+            }
+        }
+        
+        if (read_result == ESP_OK) {
+            data->weight_grams = weight_units;
+            data->sensor_status |= 0x02; // Bit 1 = HX711 OK
+        } else {
+            data->weight_grams = 0.0f;
+            ESP_LOGW(TAG, "Error leyendo HX711 tras 3 intentos");
+        }
     } else {
         data->weight_grams = 0.0f;
-        ESP_LOGW(TAG, "Error leyendo HX711: %s", esp_err_to_name(hx711_result));
+        ESP_LOGW(TAG, "HX711 no responde");
     }
    
     // Datos adicionales (estimados por ahora)

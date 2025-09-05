@@ -38,8 +38,7 @@ static void sensor_task(void* _) {
     nivometro_data_t nivometro_data;
     uint32_t measurement_count = 0;
     
-    ESP_LOGI(TAG, "Tarea de sensores iniciada con gestión inteligente de energía");
-    
+        
     for (;;) {
         measurement_count++;
         
@@ -85,8 +84,7 @@ static void sensor_task(void* _) {
             if (xQueueSend(data_queue, &d, 0) != pdTRUE) {
                 ESP_LOGW(TAG, "[%s] Cola llena, descartando muestra", mode_str);
             } else {
-                // VL53L0X eliminado del log - solo HC-SR04P y HX711
-                ESP_LOGI(TAG, "[%s] Datos enviados: %.2f cm, %.2f kg", 
+                ESP_LOGI(TAG, "[%s] Datos enviados: %.2f cm, %.3f kg", 
                         mode_str, d.distance_cm, d.weight_kg);
             }
         } else {
@@ -101,14 +99,10 @@ static void sensor_task(void* _) {
     }
 }
 
-/**
- * Tarea de publicación con gestión inteligente de energía 
- */
+// Tarea de publicación con gestión inteligente de energía
 static void publish_task(void* _) {
     sensor_data_t d;
     uint32_t publish_count = 0;
-
-    ESP_LOGI(TAG, "Tarea de publicación iniciada con gestión inteligente de energía");
 
     for (;;) {
         // Bloquea hasta recibir un dato de sensor
@@ -142,29 +136,46 @@ static void publish_task(void* _) {
                 
             } else if (power_source == POWER_SOURCE_BATTERY) {
                 // ═══════════════════════════════════════
-                // MODO BATERÍA: AHORRO MÁXIMO
+                // MODO BATERÍA: AHORRO MÁXIMO CON VERIFICACIÓN
                 // ═══════════════════════════════════════
                 
                 ESP_LOGI(TAG, "[Batería] Publicación #%lu - Modo Batería", publish_count);
                 
-                // Intentar envío rápido si hay conexión
-                // TEMPORAL: Comentado hasta verificar función
-                // if (communication_is_connected()) {
-                //     ESP_LOGI(TAG, "Conexión disponible - envío rápido");
-                //     communication_publish(&d);
-                //     ESP_LOGI(TAG, "[BATERÍA-AHORRO] Datos enviados");
-                // } else {
-                //     ESP_LOGI(TAG, "Sin conexión - datos solo locales");
-                // }
+                // Verificar peso válido
+                if (d.weight_kg == 0.0f) {
+                    ESP_LOGW(TAG, "[Batería] PESO CERO detectado - Verificar HX711");
+                }
                 
-                // SIMPLIFICADO: Enviar directamente
-                ESP_LOGI(TAG, "[Batería] Enviando datos...");
-                communication_publish(&d);
-                ESP_LOGI(TAG, "[Batería] Datos enviados");
+                // Verificar conexión MQTT con timeout
+                ESP_LOGI(TAG, "[Batería] Verificando conexión MQTT...");
+                
+                uint32_t wait_start = xTaskGetTickCount();
+                uint32_t max_wait_ticks = pdMS_TO_TICKS(10000); // 10 segundos
+                
+                while (!communication_is_mqtt_connected() && 
+                       (xTaskGetTickCount() - wait_start) < max_wait_ticks) {
+                    ESP_LOGD(TAG, "[Batería] Esperando conexión MQTT...");
+                    vTaskDelay(pdMS_TO_TICKS(1000));
+                }
+                
+                if (communication_is_mqtt_connected()) {
+                    ESP_LOGI(TAG, "[Batería] MQTT conectado - Enviando datos");
+                    communication_publish(&d);
+                    ESP_LOGI(TAG, "[Batería] Datos enviados");
+                    
+                    // Dar tiempo para confirmación
+                    vTaskDelay(pdMS_TO_TICKS(3000));
+                } else {
+                    ESP_LOGW(TAG, "[Batería] MQTT no conectado - Enviando de todas formas");
+                    communication_publish(&d);
+                    vTaskDelay(pdMS_TO_TICKS(5000));
+                }
                 
                 // Verificar si debe entrar en deep sleep
                 if (power_manager_should_sleep()) {
                     ESP_LOGI(TAG, "[Batería] Condiciones para modo batería cumplidas");
+                    ESP_LOGI(TAG, "[Batería] Esperando 2 segundos antes de deep sleep...");
+                    vTaskDelay(pdMS_TO_TICKS(2000));
                     
                     ESP_LOGI(TAG, "[Batería] Entrando en deep_sleep...");
                     power_manager_enter_deep_sleep();
@@ -172,7 +183,6 @@ static void publish_task(void* _) {
                     // EL SISTEMA SE REINICIA AQUÍ 
                 }
                 
-                // Si no entra en sleep, pausa breve
                 vTaskDelay(pdMS_TO_TICKS(200));
                 
             } else {
@@ -182,14 +192,6 @@ static void publish_task(void* _) {
                 
                 ESP_LOGW(TAG, "[DESCONOCIDO] Publicación #%lu - modo conservativo", publish_count);
                 
-                // Comportamiento conservativo: intentar envío
-                // TEMPORAL: Comentado hasta verificar función
-                // if (communication_is_connected()) {
-                //     communication_publish(&d);
-                //     ESP_LOGI(TAG, "[DESCONOCIDO] Datos enviados (modo conservativo)");
-                // }
-                
-                // SIMPLIFICADO: Enviar directamente
                 communication_publish(&d);
                 ESP_LOGI(TAG, "[DESCONOCIDO] Datos enviados (modo conservativo)");
                 
